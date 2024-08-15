@@ -10,7 +10,7 @@
                     <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">
+                            <li class="breadcrumb-item" aria-current="page">
                                 Data Kendaraan
                             </li>
                             <li class="breadcrumb-item active" aria-current="page">Tambah Data Kendaraan</li>
@@ -37,107 +37,120 @@
                         </div>
                         <div class="card-content">
                             <div class="card-body">
-                                <form class="form" data-parsley-validate>
+                                <form class="form" action="{{ route('admin.vehicles.store') }}" method="POST" data-parsley-validate enctype="multipart/form-data">
+                                    @csrf
+
                                     <div class="row">
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="type_vehicle" class="form-label">Tipe Kendaraan</label>
-                                                <select class="form-control" name="type_vehicle" id="type_vehicle">
+                                                <label for="type" class="form-label">Tipe Kendaraan</label>
+                                                <select class="form-control" name="type" id="type" data-parsley-required="true">
                                                     <option value="">Pilih Tipe Kendaraan</option>
                                                     <option value="car">Mobil</option>
                                                     <option value="motorcycle">Motor</option>
                                                 </select>
+                                                @error('type')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group mandatory">
-                                                <label for="name_vehicle" class="form-label">Nama Kendaraan</label>
-                                                <input type="text" id="name_vehicle" class="form-control"
-                                                    placeholder="Nama Kendaraan" name="name_vehicle"
-                                                    data-parsley-required="true" />
+                                                <label for="name" class="form-label">Nama Kendaraan</label>
+                                                <input type="text" id="name" class="form-control" placeholder="Nama Kendaraan" name="name" data-parsley-required="true" />
                                                 <p><small class="text-muted">Contoh: Toyota Camry 2020, BMW 3 Series 2021, dll.</small></p>
+                                                @error('name')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="brand_vehicle" class="form-label">Merek Kendaraan</label>
-                                                <input type="text" id="brand_vehicle" class="form-control"
-                                                    placeholder="Merek Kendaraan" name="brand_vehicle"
-                                                    data-parsley-required="true" />
-                                                
+                                                <label for="brand" class="form-label">Merek Kendaraan</label>
+                                                <input type="text" id="brand" class="form-control" placeholder="Merek Kendaraan" name="brand" data-parsley-required="true" />
                                                 <p><small class="text-muted">Contoh: Toyota, Honda, BMW, Yamaha, Suzuki, dll.</small></p>
+                                                @error('brand')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="model_vehicle" class="form-label">Model Kendaraan</label>
-                                                <input type="text" id="model_vehicle" class="form-control"
-                                                placeholder="Model Kendaraan" name="model_vehicle" data-parsley-required="true" />
-                                                
+                                                <label for="model" class="form-label">Model Kendaraan</label>
+                                                <input type="text" id="model" class="form-control" placeholder="Model Kendaraan" name="model" data-parsley-required="true" />
                                                 <p><small class="text-muted">Contoh: Camry, Accord, 3 Series, NMax, GSX-R, dll.</small></p>
+                                                @error('model')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="year_vehicle" class="form-label">Tahun Kendaraan</label>
-                                                <input type="text" id="year_vehicle" class="form-control"
-                                                    name="year_vehicle" placeholder="Tahun Kendaraan"
-                                                    data-parsley-required="true" data-parsley-type="number" />
-                                                    
+                                                <label for="year" class="form-label">Tahun Kendaraan</label>
+                                                <input type="text" id="year" class="form-control" name="year" placeholder="Tahun Kendaraan" data-parsley-required="true" data-parsley-type="number" />
                                                 <p><small class="text-muted">Contoh: 2020, 2018, 2021, dll.</small></p>
+                                                @error('year')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="transmition_vehicle" class="form-label">Transmisi</label>
-                                                <select class="form-control" name="transmition_vehicle" id="transmition_vehicle">
+                                                <label for="transmission" class="form-label">Transmisi</label>
+                                                <select class="form-control" name="transmission" id="transmission" data-parsley-required="true">
                                                     <option value="">Pilih Transmisi Kendaraan</option>
                                                     <option value="manual">Manual</option>
                                                     <option value="automatic">Otomatis / Matic</option>
-                                                    <option value="both">Keduanya</option>
+                                                    {{-- <option value="both">Keduanya</option> --}}
                                                 </select>
+                                                @error('transmission')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
-                                                <label for="fuel_vehicle" class="form-label">Bahan Bakar</label>
-                                                <input type="text" id="fuel_vehicle" class="form-control"
-                                                    name="fuel_vehicle" placeholder="Bahan Bakar Kendaraan"
-                                                    data-parsley-required="true"  />
+                                                <label for="fuel" class="form-label">Bahan Bakar</label>
+                                                <input type="text" id="fuel" class="form-control" name="fuel" placeholder="Bahan Bakar Kendaraan" data-parsley-required="true" />
+                                                @error('fuel')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="license_plate_number" class="form-label">Plat Nomor Kendaraan</label>
-                                                <input type="text" id="license_plate_number" class="form-control"
-                                                    name="license_plate_number" placeholder="Plat Nomor Kendaraan"
-                                                    data-parsley-required="true"  />
+                                                <input type="text" id="license_plate_number" class="form-control" name="license_plate_number" placeholder="Plat Nomor Kendaraan" data-parsley-required="true" />
+                                                @error('license_plate_number')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="capacity" class="form-label">Kapasitas Penumpang</label>
-                                                <input type="text" id="capacity" class="form-control"
-                                                    name="capacity" placeholder="Kapasitas Penumpang"
-                                                    data-parsley-required="true"  />
+                                                <input type="text" id="capacity" class="form-control" name="capacity" placeholder="Kapasitas Penumpang" data-parsley-required="true" />
+                                                @error('capacity')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
-
                                     </div>
-
+                                
                                     <div class="row">
                                         @foreach ($rentalPackages as $item)
                                             <div class="col-md-6 col-12">
                                                 <div class="form-group">
                                                     <label for="price_{{ $item->duration_hours }}_hours" class="form-label">Harga per {{ $item->name }}</label>
-                                                    <input type="text" id="price_{{ $item->duration_hours }}_hours" class="form-control"
-                                                        name="price_{{ $item->duration_hours }}_hours" placeholder="Harga per {{ $item->name }}"
-                                                        data-parsley-required="true"  />
+                                                    <input type="text" id="price_{{ $item->duration_hours }}_hours" class="form-control numeral-mask-{{ $item->duration_hours }}" name="price_{{ $item->duration_hours }}_hours" placeholder="Harga per {{ $item->name }}" data-parsley-required="true" />
+                                                    @error('price_{{ $item->duration_hours }}_hours')
+                                                        <div class="text-danger">{{ $message }}</div>
+                                                    @enderror
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
-
+                                
                                     <div class="col-md-12 col-12 mt-3">
                                         <div class="form-group">
                                             <label for="checkbox-container" class="form-label">Fitur yang Disediakan</label>
@@ -146,34 +159,37 @@
                                             <div class="row" id="checkbox-container"></div>
                                         </div>
                                     </div>
-
+                                
                                     <div class="row">
                                         <div class="col-md-12 col-12">
                                             <div class="form-group">
                                                 <label for="description" class="form-label">Deskripsi</label>
-                                                <textarea name="description" id="description" cols="30" rows="3" class="form-control"></textarea>
+                                                <textarea name="description" id="description" cols="30" rows="3" class="form-control" data-parsley-required="true"></textarea>
+                                                @error('description')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12 col-12">
                                             <div class="form-group">
-                                                <label for="image_vehicle" class="form-label">Foto Kendaraan</label>
-                                                <input type="file" class="image-preview-filepond" name="image_vehicle" id="image_vehicle" >
+                                                <label for="image" class="form-label">Foto Kendaraan</label>
+                                                <input type="file" class="image-preview-filepond" name="image_vehicle" id="image" data-parsley-required="true">
+                                                @error('image')
+                                                    <div class="text-danger">{{ $message }}</div>
+                                                @enderror
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-12 d-flex justify-content-end">
-                                            <button type="submit" class="btn btn-primary me-1 mb-1">
-                                                Submit
-                                            </button>
-                                            <button type="reset" class="btn btn-light-secondary me-1 mb-1">
-                                                Reset
-                                            </button>
+                                            <button class="btn btn-primary me-1 mb-1">Submit</button>
+                                            <button type="reset" class="btn btn-light-secondary me-1 mb-1">Reset</button>
                                         </div>
                                     </div>
                                 </form>
+                                
                             </div>
                         </div>
                     </div>
@@ -187,7 +203,7 @@
     <script>
         $(document).ready(function () {
 
-            $('#type_vehicle').on('change', function() {
+            $('#type').on('change', function() {
                 var type = $(this).val();
                 var featureNotice = $('#feature-notice');
                 
@@ -197,7 +213,7 @@
                     $.ajax({
                         url: "{{ route('admin.vehicles.checkbox') }}",
                         type: 'GET',
-                        data: { type_vehicle: type },
+                        data: { type: type },
                         success: function(response) {
                             var checkboxContainer = $('#checkbox-container');
                             checkboxContainer.empty(); // Clear previous checkboxes
@@ -211,10 +227,8 @@
                                 checkboxContainer.append(`
                                     <div class="col-md-4 col-12 mb-3">
                                         <div class="form-check">
-                                            <input class="form-check-input form-check-success form-check-glow" type="checkbox" id="${option.id}" name="${option.name}" value="${option.id}">
-                                            <label class="form-check-label" for="${option.id}">
-                                                ${formattedLabel}
-                                            </label>
+                                            <input type="checkbox" class="form-check-input form-check-success form-check-glow" id="feature_${option.id}" name="features[]" value="${option.id}">
+                                            <label class="form-check-label" for="feature_${option.id}">${formattedLabel}</label>
                                         </div>
                                     </div>
                                 `);
@@ -229,6 +243,21 @@
                     $('#checkbox-container').empty(); // Clear checkboxes if no type selected
                 }
             });
+
+            const classNames = ['numeral-mask-4', 'numeral-mask-12', 'numeral-mask-24'];
+
+            classNames.forEach(className => {
+                const elements = document.querySelectorAll(`.${className}`);
+                if (elements.length) {
+                    elements.forEach(element => {
+                        new Cleave(element, {
+                            numeral: true,
+                            numeralThousandsGroupStyle: 'thousand'
+                        });
+                    });
+                }
+            });
+
 
         });
     </script>

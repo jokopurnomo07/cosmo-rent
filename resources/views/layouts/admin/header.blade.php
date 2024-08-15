@@ -57,8 +57,9 @@
                     <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="user-menu d-flex">
                             <div class="user-name text-end me-3">
-                                <h6 class="mb-0 text-gray-600">John Ducky</h6>
-                                <p class="mb-0 text-sm text-gray-600">Administrator</p>
+                                <h6 class="mb-0 text-gray-600">{{ Auth::user()->name }}</h6>
+                                <p class="mb-0 text-sm text-gray-600">
+                                    {{ Auth::user()->hasRole('admin') ? 'Administrator' : 'User' }}</p>
                             </div>
                             <div class="user-img d-flex align-items-center">
                                 <div class="avatar avatar-md">
@@ -76,6 +77,12 @@
                                 Profile</a></li>
                         <li>
                             <hr class="dropdown-divider">
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('home') }}">
+                                <i class="icon-mid bi bi-house me-2"></i>
+                                Halaman Utama
+                            </a>
                         </li>
                         <!-- Logout Form -->
                         <li>

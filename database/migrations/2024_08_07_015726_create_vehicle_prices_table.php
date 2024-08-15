@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
             $table->decimal('price_4_hours', 10, 0)->nullable();
             $table->decimal('price_12_hours', 10, 0)->nullable();
-            $table->decimal('price_1_day', 10, 0)->nullable();
+            $table->decimal('price_24_hours', 10, 0)->nullable();
             $table->timestamps();
         });
     }

@@ -106,9 +106,19 @@
                                     <h2 class="brand-text text-primary ms-1">Cosmo Rent</h2>
                                 </a>
 
+
                                 <h4 class="card-title mb-1">Welcome to Cosmo Rent! 👋</h4>
                                 <p class="card-text mb-2">Please sign-in to your account and start the adventure</p>
 
+                                @error('email')
+                                <div class="alert alert-danger mt-1 alert-validation-msg alert-dismissible fade show" role="alert">
+                                    <div class="alert-body d-flex align-items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-info me-50"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                        <span>{{ $message }}</span>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                                @enderror
                                 <form class="auth-login-form mt-2" action="{{ route('login') }}" method="POST">
                                     @csrf
                                     <div class="mb-1">
@@ -198,10 +208,10 @@
                     timerInterval = setInterval(() => {
                         const content = Swal.getHtmlContainer();
                         if (content) {
-                        const b = content.querySelector('b');
-                        if (b) {
-                            b.textContent = Swal.getTimerLeft();
-                        }
+                            const b = content.querySelector('b');
+                            if (b) {
+                                b.textContent = Swal.getTimerLeft();
+                            }
                         }
                     }, 100);
                     },

@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class UsersController extends Controller
 {
     public function index(){
-        return view('admin.users.index');
+        $users = User::whereHas('roles', function($query) {
+            $query->where('name', 'user');
+        })->get();
+        
+        return view('admin.users.index', ['users' => $users]);
     }
 }

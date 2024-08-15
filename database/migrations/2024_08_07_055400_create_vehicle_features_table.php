@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
             $table->foreignId('feature_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            $table->unique(['vehicle_id', 'feature_id']);
         });
     }
 

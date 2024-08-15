@@ -14,7 +14,15 @@
                 <li class="nav-item {{ request()->is('reservation*') ? 'active' : '' }}"><a href="{{ route('reservations.create') }}" class="nav-link">Pemesanan</a></li>
                 <li class="nav-item {{ request()->routeIs('contact') ? 'active' : '' }}"><a href="{{ route('contact') }}" class="nav-link">Kontak</a></li>
                 <li class="nav-item">
-                    <a href="{{ route('login') }}" class="nav-link btn btn-success btn-sm">Login</a>
+                    @if (Auth::user())
+                        @if (Auth::user()->hasRole('admin'))
+                            <a href="{{ route('admin.dashboard') }}" class="nav-link btn btn-success btn-sm">Dashboard</a>
+                        @else
+                            <a href="{{ route('admin.dashboard') }}" class="nav-link btn btn-success btn-sm">Dashboard</a>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="nav-link btn btn-success btn-sm">Login</a>
+                    @endif)
                 </li>
             </ul>
         </div>        

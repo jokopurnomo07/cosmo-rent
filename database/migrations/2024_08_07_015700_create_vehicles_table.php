@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('brand');
             $table->string('model');
             $table->year('year');
-            $table->string('transmition');
+            $table->string('transmission');
             $table->string('fuel');
             $table->string('registration_number')->unique()->command('License Number');
             $table->integer('capacity')->comment('Number of passengers for cars or engine capacity for motorcycles');

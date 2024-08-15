@@ -23,14 +23,14 @@ class VehiclePriceSeeder extends Seeder
             'vehicle_id' => $vehicleAvanzaId,
             'price_4_hours' => 100000,
             'price_12_hours' => 150000,
-            'price_1_day' => 200000,
+            'price_24_hours' => 200000,
         ]);
 
         VehiclePrice::create([
             'vehicle_id' => $vehicleBeatId,
             'price_4_hours' => 50000,
             'price_12_hours' => 75000,
-            'price_1_day' => 100000,
+            'price_24_hours' => 100000,
         ]);
     }
 }

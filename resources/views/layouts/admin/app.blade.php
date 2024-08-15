@@ -3,7 +3,8 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta charset="UTF-8"><meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title') - Cosmo Rent Dashboard</title>
     <link rel="shortcut icon" href="{{ asset('admin') }}/assets/compiled/svg/favicon.svg" type="image/x-icon">
     <link rel="shortcut icon"
@@ -19,6 +20,9 @@
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/filepond/filepond.css">
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css">
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/toastify-js/src/toastify.css">
+    <link rel="stylesheet" href="{{ asset('admin') }}/assets/static/lightbox/css/lightbox.min.css">
+    <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.css">
+    <link rel="stylesheet" crossorigin href="{{ asset('admin') }}/assets/compiled/css/extra-component-sweetalert.css">
 
     @stack('styles')
 </head>
@@ -70,6 +74,11 @@
     <script src="{{ asset('admin') }}/assets/extensions/filepond/filepond.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/toastify-js/src/toastify.js"></script>
     <script src="{{ asset('admin') }}/assets/static/js/pages/filepond.js"></script>
+    <script src="{{ asset('admin') }}/assets/static/lightbox/js/lightbox.min.js"></script>
+    <script src="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.js"></script>>
+    
+    <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/cleave.min.js"></script>
+    <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/addons/cleave-phone.us.js"></script>
 
 
     @stack('scripts')

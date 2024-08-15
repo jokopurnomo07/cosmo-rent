@@ -49,7 +49,6 @@ Route::post('/payments', [PaymentController::class, 'store'])->name('payments.st
 Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
 // Admin Dashboard
-
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
@@ -61,9 +60,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'store' => 'admin.vehicles.store',
         'show' => 'admin.vehicles.show',
         'edit' => 'admin.vehicles.edit',
-        'update' => 'admin.vehicles.update',
         'destroy' => 'admin.vehicles.destroy', 
     ]);
+    Route::post('vehicles/update/{id}', [AdminVehicleController::class, 'update'])->name('admin.vehicles.update');
 
     // Rental Routes
     Route::resource('rentals', RentalController::class)->names([
@@ -118,6 +117,12 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'destroy' => 'admin.reports.destroy',
     ]);
 });
+
+// Admin Dashboard
+Route::prefix('users')->middleware(['auth', 'role:user'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'indexUser'])->name('user.dashboard');
+});
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -21,6 +21,13 @@ class Vehicle extends Model
     {
         return $this->belongsToMany(Feature::class, 'vehicle_features');
     }
+
+    public function prices()
+    {
+        return $this->hasOne(VehiclePrice::class);
+    }
+
+
     public function tapActivity(Activity $activity, string $eventName)
     {
         $activity->description = "{$eventName} vehicle: {$this->name} (Model: {$this->model})";
