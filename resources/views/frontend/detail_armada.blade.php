@@ -3,8 +3,8 @@
 @section('content')
 
 
-    <section class="hero-wrap hero-wrap-2 js-fullheight" style="background-image: url('{{ asset('frontend/images/bg_3.jpg') }}');"
-        data-stellar-background-ratio="0.5">
+    <section class="hero-wrap hero-wrap-2 js-fullheight"
+        style="background-image: url('{{ asset('frontend/images/bg_3.jpg') }}');" data-stellar-background-ratio="0.5">
         <div class="overlay"></div>
         <div class="container">
             <div class="row no-gutters slider-text js-fullheight align-items-end justify-content-start">
@@ -24,10 +24,11 @@
             <div class="row justify-content-center">
                 <div class="col-md-12">
                     <div class="car-details">
-                        <div class="img rounded" style="background-image: url('{{ asset('frontend/images/bg_1.jpg') }}');"></div>
+                        <div class="img rounded"
+                            style="background-image: url('{{ asset('storage/' . $vehicle->vehicle_images) }}');"></div>
                         <div class="text text-center">
-                            <span class="subheading">Cheverolet</span>
-                            <h2>Mercedes Grand Sedan</h2>
+                            <span class="subheading">{{ $vehicle->brand }}</span>
+                            <h2>{{ $vehicle->name }}</h2>
                         </div>
                     </div>
                 </div>
@@ -42,7 +43,7 @@
                                 <div class="text">
                                     <h3 class="heading mb-0 pl-3">
                                         Transmisi
-                                        <span>Manual</span>
+                                        <span>{{ $vehicle->transmission }}</span>
                                     </h3>
                                 </div>
                             </div>
@@ -58,23 +59,7 @@
                                 <div class="text">
                                     <h3 class="heading mb-0 pl-3">
                                         Kapasitas Penumpang
-                                        <span>5 Orang</span>
-                                    </h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md d-flex align-self-stretch ftco-animate">
-                    <div class="media block-6 services">
-                        <div class="media-body py-md-4">
-                            <div class="d-flex mb-3 align-items-center">
-                                <div class="icon d-flex align-items-center justify-content-center"><span
-                                        class="flaticon-backpack"></span></div>
-                                <div class="text">
-                                    <h3 class="heading mb-0 pl-3">
-                                        Bagasi
-                                        <span>Ya</span>
+                                        <span>{{ $vehicle->capacity }} Orang</span>
                                     </h3>
                                 </div>
                             </div>
@@ -90,7 +75,7 @@
                                 <div class="text">
                                     <h3 class="heading mb-0 pl-3">
                                         Bahan Bakar
-                                        <span>Bensin</span>
+                                        <span>{{ $vehicle->fuel }}</span>
                                     </h3>
                                 </div>
                             </div>
@@ -98,6 +83,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="row">
                 <div class="col-md-12 pills">
                     <div class="bd-example bd-example-tabs">
@@ -125,46 +111,31 @@
                             <div class="tab-pane fade show active" id="pills-description" role="tabpanel"
                                 aria-labelledby="pills-description-tab">
                                 <div class="row">
-                                    <div class="col-md-4">
-                                        <ul class="features">
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Airconditions</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Child Seat</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>GPS</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Luggage</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Music</li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <ul class="features">
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Seat Belt</li>
-                                            <li class="remove"><span class="ion-ios-close"></span>Sleeping Bed</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Water</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Bluetooth</li>
-                                            <li class="remove"><span class="ion-ios-close"></span>Onboard computer</li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <ul class="features">
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Audio input</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Long Term Trips</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Car Kit</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Remote central
-                                                locking</li>
-                                            <li class="check"><span class="ion-ios-checkmark"></span>Climate control</li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                    @php
+                                        $columns = array_chunk($features, ceil(count($features) / 3));
+                                    @endphp
+                                    @foreach ($columns as $column)
+                                        <div class="col-md-4">
+                                            <ul class="features">
+                                                @foreach ($column as $feature)
+                                                    @php
+                                                        $name = str_replace('_', ' ', $feature['name']);
+                                                        $exists = $vehicle->features->contains('name', $feature['name']);
+                                                    @endphp
+                                                    <li class="{{ $exists ? 'check' : 'remove' }}">
+                                                        <span class="{{ $exists ? 'ion-ios-checkmark' : 'ion-ios-close' }}"></span>
+                                                        {{ ucwords($name) }}
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endforeach
+                                </div>                                
                             </div>
 
                             <div class="tab-pane fade" id="pills-manufacturer" role="tabpanel"
                                 aria-labelledby="pills-manufacturer-tab">
-                                <p>Even the all-powerful Pointing has no control about the blind texts it is an almost
-                                    unorthographic life One day however a small line of blind text by the name of Lorem
-                                    Ipsum decided to leave for the far World of Grammar.</p>
-                                <p>When she reached the first hills of the Italic Mountains, she had a last view back on the
-                                    skyline of her hometown Bookmarksgrove, the headline of Alphabet Village and the subline
-                                    of her own road, the Line Lane. Pityful a rethoric question ran over her cheek, then she
-                                    continued her way.</p>
+                                <p>{{ $vehicle->description }}</p>
                             </div>
 
                             <div class="tab-pane fade" id="pills-review" role="tabpanel"
@@ -197,29 +168,6 @@
                                         </div>
                                         <div class="review d-flex">
                                             <div class="user-img" style="background-image: url(images/person_2.jpg)">
-                                            </div>
-                                            <div class="desc">
-                                                <h4>
-                                                    <span class="text-left">Jacob Webb</span>
-                                                    <span class="text-right">14 March 2018</span>
-                                                </h4>
-                                                <p class="star">
-                                                    <span>
-                                                        <i class="ion-ios-star"></i>
-                                                        <i class="ion-ios-star"></i>
-                                                        <i class="ion-ios-star"></i>
-                                                        <i class="ion-ios-star"></i>
-                                                        <i class="ion-ios-star"></i>
-                                                    </span>
-                                                    <span class="text-right"><a href="#" class="reply"><i
-                                                                class="icon-reply"></i></a></span>
-                                                </p>
-                                                <p>When she reached the first hills of the Italic Mountains, she had a last
-                                                    view back on the skyline of her hometown Bookmarksgrov</p>
-                                            </div>
-                                        </div>
-                                        <div class="review d-flex">
-                                            <div class="user-img" style="background-image: url(images/person_3.jpg)">
                                             </div>
                                             <div class="desc">
                                                 <h4>
@@ -320,51 +268,46 @@
                     <div class="car-list">
                         <table class="table">
                             <thead class="thead-primary">
-                            <tr class="text-center">
-                                <th class="bg-primary heading">Per Hour Rate</th>
-                                <th class="bg-dark heading">Per Day Rate</th>
-                                <th class="bg-black heading">Leasing</th>
-                            </tr>
+                                <tr class="text-center">
+                                    <th class="bg-primary heading">Per 4 Jam</th>
+                                    <th class="bg-dark heading">Per 12 Jam</th>
+                                    <th class="bg-black heading">Per 1 Hari</th>
+                                </tr>
 
                             </thead>
                             <tbody>
-                            <tr class="">
+                                <tr class="">
 
-                            0.9
-                                
-                                <td class="price">
-                                    <p class="btn-custom"><a href="#">Rent a car</a></p>
-                                    <div class="price-rate">
-                                        <h3>
-                                            <span class="num"><small class="currency">$</small> 10.99</span>
-                                            <span class="per">/per hour</span>
-                                        </h3>
-                                        <span class="subheading">$3/hour fuel surcharges</span>
-                                    </div>
-                                </td>
-                                
-                                <td class="price">
-                                    <p class="btn-custom"><a href="#">Rent a car</a></p>
-                                    <div class="price-rate">
-                                        <h3>
-                                            <span class="num"><small class="currency">$</small> 60.99</span>
-                                            <span class="per">/per day</span>
-                                        </h3>
-                                        <span class="subheading">$3/hour fuel surcharges</span>
-                                </div>
-                                </td>
+                                    <td class="price">
+                                        <p class="btn-custom"><a href="#">Pesan Sekarang</a></p>
+                                        <div class="price-rate">
+                                            <h3>
+                                                <span class="num">Rp. {{ number_format($vehicle->prices->price_4_hours ?? 0, 0, ",", ".") }}</span>
+                                                <span class="per">/Per 4 Jam</span>
+                                            </h3>
+                                        </div>
+                                    </td>
 
-                                <td class="price">
-                                    <p class="btn-custom"><a href="#">Rent a car</a></p>
-                                    <div class="price-rate">
-                                        <h3>
-                                            <span class="num"><small class="currency">$</small> 995.99</span>
-                                            <span class="per">/per month</span>
-                                        </h3>
-                                        <span class="subheading">$3/hour fuel surcharges</span>
-                                    </div>
-                                </td>
-                            </tr><!-- END TR-->
+                                    <td class="price">
+                                        <p class="btn-custom"><a href="#">Pesan Sekarang</a></p>
+                                        <div class="price-rate">
+                                            <h3>
+                                                <span class="num">Rp. {{ number_format($vehicle->prices->price_12_hours ?? 0, 0, ",", ".") }}</span>
+                                                <span class="per">/Per 12 Jam</span>
+                                            </h3>
+                                        </div>
+                                    </td>
+
+                                    <td class="price">
+                                        <p class="btn-custom"><a href="#">Pesan Sekarang</a></p>
+                                        <div class="price-rate">
+                                            <h3>
+                                                <span class="num">Rp. {{ number_format($vehicle->prices->price_24_hours ?? 0, 0, ",", ".") }}</span>
+                                                <span class="per">/Per 1 Hari</span>
+                                            </h3>
+                                        </div>
+                                    </td>
+                                </tr><!-- END TR-->
 
                             </tbody>
                         </table>
@@ -384,21 +327,24 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-md-4">
-                    <div class="car-wrap rounded ftco-animate">
-                        <div class="img rounded d-flex align-items-end" style="background-image: url('{{ asset('frontend/images/car-1.jpg') }}');">
-                        </div>
-                        <div class="text">
-                            <h2 class="mb-0"><a href="car-single.html">Mercedes Grand Sedan</a></h2>
-                            <div class="d-flex mb-3">
-                                <span class="cat">Cheverolet</span>
-                                <p class="price ml-auto">$500 <span>/day</span></p>
+                @foreach ($recommendation as $item)
+                    <div class="col-md-4">
+                        <div class="car-wrap rounded ftco-animate">
+                            <div class="img rounded d-flex align-items-end"
+                                style="background-image: url('{{ asset('storage/' . $item->vehicle_images) }}');">
                             </div>
-                            <p class="d-flex mb-0 d-block"><a href="#" class="btn btn-primary py-2 mr-1">Book
-                                    now</a> <a href="{{ route('vehicles.show', ['id' => 1]) }}" class="btn btn-secondary py-2 ml-1">Details</a></p>
+                            <div class="text">
+                                <h2 class="mb-0"><a href="car-single.html">{{ $item->name }}</a></h2>
+                                <div class="d-flex mb-3">
+                                    <span class="cat">{{ $item->brand }}</span>
+                                    <p class="price ml-auto">Rp. {{ number_format($item->prices->price_24_hours ?? 0, 0, ",", ".") }} <span>/Hari</span></p>
+                                </div>
+                                <p class="d-flex mb-0 d-block"><a href="#" class="btn btn-primary py-2 mr-1">Pesan</a> <a href="{{ route('vehicles.show', ['id' => $item->id]) }}"
+                                        class="btn btn-secondary py-2 ml-1">Detail</a></p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endforeach
             </div>
         </div>
     </section>

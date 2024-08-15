@@ -18,11 +18,11 @@
                         @if (Auth::user()->hasRole('admin'))
                             <a href="{{ route('admin.dashboard') }}" class="nav-link btn btn-success btn-sm">Dashboard</a>
                         @else
-                            <a href="{{ route('admin.dashboard') }}" class="nav-link btn btn-success btn-sm">Dashboard</a>
+                            <a href="{{ route('user.dashboard') }}" class="nav-link btn btn-success btn-sm">Dashboard</a>
                         @endif
                     @else
                         <a href="{{ route('login') }}" class="nav-link btn btn-success btn-sm">Login</a>
-                    @endif)
+                    @endif
                 </li>
             </ul>
         </div>        

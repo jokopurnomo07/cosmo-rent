@@ -23,37 +23,31 @@
     <section class="ftco-section bg-light">
         <div class="container">
             <div class="row">
+                @foreach ($vehicles as $item)
                 <div class="col-md-4">
                     <div class="car-wrap rounded ftco-animate">
-                        <div class="img rounded d-flex align-items-end" style="background-image: url('{{ asset('frontend/images/car-1.jpg') }}');">
+                        <div class="img rounded d-flex align-items-end" style="background-image: url('{{ asset('storage/' . $item->vehicle_images) }}');">
                         </div>
                         <div class="text">
-                            <h2 class="mb-0"><a href="car-single.html">Mercedes Grand Sedan</a></h2>
+                            <h2 class="mb-0"><a href="car-single.html">{{ $item->name }}</a></h2>
                             <div class="d-flex mb-3">
-                                <span class="cat">Cheverolet</span>
-                                <p class="price ml-auto">$500 <span>/day</span></p>
+                                <span class="cat">{{ $item->brand }}</span>
+                                <p class="price ml-auto">Rp. {{ number_format($item->prices->price_24_hours ?? 0, 0, ",", ".") }} <span>/ Hari</span></p>
                             </div>
-                            <p class="d-flex mb-0 d-block"><a href="#" class="btn btn-primary py-2 mr-1">Book now</a>
-                                <a href="{{ route('vehicles.show', ['id' => 1]) }}" class="btn btn-secondary py-2 ml-1">Details</a></p>
+                            <p class="d-flex mb-0 d-block"><a href="#" class="btn btn-primary py-2 mr-1">Pesan</a>
+                                <a href="{{ route('vehicles.show', ['id' => $item->id]) }}" class="btn btn-secondary py-2 ml-1">Detail</a></p>
                         </div>
                     </div>
                 </div>
+                @endforeach
             </div>
             <div class="row mt-5">
                 <div class="col text-center">
                     <div class="block-27">
-                        <ul>
-                            <li><a href="#">&lt;</a></li>
-                            <li class="active"><span>1</span></li>
-                            <li><a href="#">2</a></li>
-                            <li><a href="#">3</a></li>
-                            <li><a href="#">4</a></li>
-                            <li><a href="#">5</a></li>
-                            <li><a href="#">&gt;</a></li>
-                        </ul>
+                        {{ $vehicles->links('vendor.pagination.frontend') }}
                     </div>
                 </div>
-            </div>
+            </div>            
         </div>
     </section>
 
