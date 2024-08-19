@@ -20,20 +20,13 @@ return new class extends Migration
             $table->dateTime('end_date');
             $table->string('time_pickup')->nullable();
             $table->decimal('total_price', 10, 0)->nullable();
-            $table->decimal('down_payment_amount', 10, 0)->nullable();
-            $table->enum('down_payment_status', ['not_required', 'pending', 'paid', 'failed'])->default('not_required');
             $table->enum('status', [
                 'pending',                // Reservasi baru yang belum diproses
-                'awaiting_down_payment',  // Menunggu pembayaran uang muka
-                'partially_paid',         // Pembayaran sebagian telah diterima
                 'canceled',               // Reservasi dibatalkan
                 'confirmed',              // Reservasi telah dikonfirmasi
-                'awaiting_confirmation',  // Menunggu konfirmasi dari admin atau sistem
-                'payment_failed',         // Pembayaran gagal dilakukan
                 'expired',                // Reservasi kadaluarsa karena tidak ada tindakan lebih lanjut
                 'on_hold',                // Reservasi ditunda sementara waktu
                 'rejected',               // Reservasi ditolak oleh admin
-                'in_progress',            // Reservasi sedang dalam proses tetapi belum "ongoing"
             ])->default('pending');
             $table->string('nama_guest')->nullable();
             $table->string('email_guest')->nullable();
@@ -41,6 +34,7 @@ return new class extends Migration
             $table->string('address_pickup')->nullable();
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();
+            $table->string('reason_canceled')->nullable();
             $table->index('user_id');
             $table->index('vehicle_id');
             $table->timestamps();

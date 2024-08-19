@@ -22,44 +22,56 @@
                     <h5 class="card-title">
                         Data Reservasi
                     </h5>
-                    <a href="{{ route('admin.reservations.create') }}">
+                    <a href="{{ route('reservations.create') }}">
                         <button type="button" class="btn btn-primary">
                             Tambah Reservasi
                         </button>
                     </a>
                 </div>
                 <div class="card-body">
-                    <table class="table table-striped" id="table1">
-                        <thead>
-                            <tr>
-                                <th>Name Pemesan</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>City</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Graiden</td>
-                                <td>vehicula.aliquet@semconsequat.co.uk</td>
-                                <td>076 4820 8838</td>
-                                <td>Offenburg</td>
-                                <td>
-                                    <span class="badge bg-success">Active</span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Dale</td>
-                                <td>fringilla.euismod.enim@quam.ca</td>
-                                <td>0500 527693</td>
-                                <td>New Quay</td>
-                                <td>
-                                    <span class="badge bg-success">Active</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="table1">
+                            <thead>
+                                <tr>
+                                    <th style="width: 5%;">No</th>
+                                    <th style="width: 40%;">Nama Pemesan</th>
+                                    <th style="width: 15%;">Tanggal Pemesanan</th>
+                                    <th style="width: 15%;">Tanggal Selesai</th>
+                                    <th style="width: 20%;">Email Pemesan</th>
+                                    <th style="width: 15%;">No HP Pemesan</th>
+                                    <th style="width: 25%;">Alamat Penjemputan</th>
+                                    <th style="width: 10%;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($reservation as $item)
+                                    <tr>
+                                        <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $item->user_id != null ? $item->user->name : $item->nama_guest }}</td>
+                                        <td>{{ $item->start_date }}</td>
+                                        <td>{{ $item->end_date }}</td>
+                                        <td>{{ $item->user_id != null ? $item->user->email : $item->email_guest }}</td>
+                                        <td>{{ $item->user_id != null ? $item->user->phone : $item->no_hp_guest }}</td>
+                                        <td>{{ $item->user_id != null ? $item->user->address : $item->address_pickup }}</td>
+                                        <td>
+                                            @php
+                                                $status = "";
+                                                if( $item->status == "pending" ){
+                                                    $status = "warning";
+                                                }elseif ($item->status == "canceled") {
+                                                    $status = "danger";
+                                                }else{
+                                                    $status = "success";
+                                                }
+                                            @endphp
+                                            <span class="badge bg-{{ $status }}">{{ $item->status }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    
                 </div>
             </div>
 

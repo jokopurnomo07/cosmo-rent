@@ -21,11 +21,8 @@ return new class extends Migration
             $table->dateTime('end_date');
             $table->string('time_pickup')->nullable();
             $table->decimal('total_price', 10, 0)->nullable();
-            $table->decimal('down_payment_amount', 10, 0)->nullable();
-            $table->enum('down_payment_status', ['not_required', 'pending', 'paid', 'failed'])->default('not_required');
             $table->enum('status', [
-                'awaiting_down_payment',  // Menunggu pembayaran uang muka
-                'partially_paid',         // Pembayaran sebagian telah diterima
+                'paid',         // Pembayaran telah diterima
                 'ongoing',                // Penyewaan sedang berlangsung
                 'completed',              // Penyewaan selesai dan telah dikonfirmasi selesai
                 'awaiting_confirmation',  // Menunggu konfirmasi dari admin atau sistem

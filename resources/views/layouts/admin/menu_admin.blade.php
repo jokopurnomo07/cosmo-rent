@@ -15,11 +15,26 @@
             <span>Kendaraan</span>
         </a>
     </li>
-    <li class="sidebar-item {{ request()->is('admin/reservations*') ? 'active' : '' }}">
-        <a href="{{ route('admin.reservations.index') }}" class='sidebar-link'>
+    <li class="sidebar-item {{ request()->is('admin/reservations*') ? 'active' : '' }} has-sub">
+        <a href="#" class='sidebar-link'>
             <i class="bi bi-calendar-check"></i>
             <span>Reservasi</span>
         </a>
+
+        <ul class="submenu">
+            <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'pending') ? 'active' : '' }}">
+                <a href="{{ route('admin.reservations.index', ['status' => 'pending']) }}" class="submenu-link">Reservasi Baru</a>
+            </li>
+            <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'canceled') ? 'active' : '' }}">
+                <a href="{{ route('admin.reservations.index', ['status' => 'canceled']) }}" class="submenu-link">Reservasi Dibatalkan</a>
+            </li>
+            <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'confirmed') ? 'active' : '' }}">
+                <a href="{{ route('admin.reservations.index', ['status' => 'confirmed']) }}" class="submenu-link">Reservasi Dikonfirmasi</a>
+
+            </li>
+        </ul>
+
+
     </li>
     <li class="sidebar-item {{ request()->is('admin/rentals*') ? 'active' : '' }}">
         <a href="{{ route('admin.rentals.index') }}" class='sidebar-link'>

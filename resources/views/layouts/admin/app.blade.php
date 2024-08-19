@@ -57,7 +57,6 @@
     
     <script src="{{ asset('admin') }}/assets/extensions/jquery/jquery.min.js"></script>
     <script src="{{ asset('admin') }}/assets/compiled/js/app.js"></script>
-    <script src="{{ asset('admin') }}/assets/static/js/pages/dashboard.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/simple-datatables/umd/simple-datatables.js"></script>
     <script src="{{ asset('admin') }}/assets/static/js/pages/simple-datatables.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/parsleyjs/parsley.min.js"></script>
@@ -75,7 +74,7 @@
     <script src="{{ asset('admin') }}/assets/extensions/toastify-js/src/toastify.js"></script>
     <script src="{{ asset('admin') }}/assets/static/js/pages/filepond.js"></script>
     <script src="{{ asset('admin') }}/assets/static/lightbox/js/lightbox.min.js"></script>
-    <script src="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.js"></script>>
+    <script src="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.js"></script>
     
     <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/cleave.min.js"></script>
     <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/addons/cleave-phone.us.js"></script>

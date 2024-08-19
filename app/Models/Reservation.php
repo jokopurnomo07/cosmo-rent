@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Reservation extends Model
 {
     use HasFactory, LogsActivity;
+    protected $guarded = [];
     protected static $logAttributes = ['user_id', 'vehicle_id', 'start_date', 'end_date', 'total_price', 'status'];
     protected static $logName = 'reservation';
 
@@ -27,7 +28,7 @@ class Reservation extends Model
 
     public function services()
     {
-        return $this->belongsToMany(Service::class, 'reservation_service');
+        return $this->belongsToMany(Service::class, 'reservation_services');
     }
 
     public function tapActivity(Activity $activity, string $eventName)

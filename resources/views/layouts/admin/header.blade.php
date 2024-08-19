@@ -17,7 +17,7 @@
                             <i class='bi bi-bell bi-sub fs-4'></i>
                             <span class="badge badge-notification bg-danger">7</span>
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown"
+                        <ul class="dropdown-menu dropdown-center  dropdown-menu-sm-end notification-dropdown"
                             aria-labelledby="dropdownMenuButton">
                             <li class="dropdown-header">
                                 <h6>Notifications</h6>
@@ -29,8 +29,7 @@
                                     </div>
                                     <div class="notification-text ms-4">
                                         <p class="notification-title font-bold">Successfully check out</p>
-                                        <p class="notification-subtitle font-thin text-sm">Order ID #256
-                                        </p>
+                                        <p class="notification-subtitle font-thin text-sm">Order ID #256</p>
                                     </div>
                                 </a>
                             </li>
@@ -41,14 +40,13 @@
                                     </div>
                                     <div class="notification-text ms-4">
                                         <p class="notification-title font-bold">Homework submitted</p>
-                                        <p class="notification-subtitle font-thin text-sm">Algebra math
-                                            homework</p>
+                                        <p class="notification-subtitle font-thin text-sm">Algebra math homework
+                                        </p>
                                     </div>
                                 </a>
                             </li>
                             <li>
-                                <p class="text-center py-2 mb-0"><a href="#">See all
-                                        notification</a></p>
+                                <p class="text-center py-2 mb-0"><a href="#">See all notification</a></p>
                             </li>
                         </ul>
                     </li>
@@ -57,9 +55,8 @@
                     <a href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <div class="user-menu d-flex">
                             <div class="user-name text-end me-3">
-                                <h6 class="mb-0 text-gray-600">{{ Auth::user()->name }}</h6>
-                                <p class="mb-0 text-sm text-gray-600">
-                                    {{ Auth::user()->hasRole('admin') ? 'Administrator' : 'User' }}</p>
+                                <h6 class="mb-0 text-gray-600">John Ducky</h6>
+                                <p class="mb-0 text-sm text-gray-600">Administrator</p>
                             </div>
                             <div class="user-img d-flex align-items-center">
                                 <div class="avatar avatar-md">
@@ -75,6 +72,7 @@
                         </li>
                         <li><a class="dropdown-item" href="#"><i class="icon-mid bi bi-person me-2"></i> My
                                 Profile</a></li>
+                        <li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>

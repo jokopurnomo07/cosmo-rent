@@ -10,7 +10,8 @@
                 <div class="col-lg-8 ftco-animate">
                     <div class="text w-100 text-center mb-md-5 pb-md-5">
                         <h1 class="mb-4">Cara Cepat &amp; Mudah Untuk Menyewa Kendaraan</h1>
-                        <p style="font-size: 18px;">Sebuah jalan kecil bernama Nuden melintasi area ini dan menyediakan akses ke berbagai layanan penyewaan kendaraan.
+                        <p style="font-size: 18px;">Sebuah jalan kecil bernama Nuden melintasi area ini dan menyediakan akses
+                            ke berbagai layanan penyewaan kendaraan.
                             Ini adalah kawasan yang nyaman,
                             di mana pelanggan dapat dengan mudah menemukan berbagai pilihan untuk menyewa kendaraan.</p>
                     </div>
@@ -26,7 +27,8 @@
                     <div class="row no-gutters">
                         <div class="col-md-12 d-flex align-items-center">
                             <div class="services-wrap rounded-right w-100">
-                                <h3 class="heading-section mb-4">Cara yang Lebih Baik untuk Menyewa Kendaraan Sempurna Anda</h3>
+                                <h3 class="heading-section mb-4">Cara yang Lebih Baik untuk Menyewa Kendaraan Sempurna Anda
+                                </h3>
                                 <div class="row d-flex mb-4">
                                     <div class="col-md-4 d-flex align-self-stretch ftco-animate">
                                         <div class="services w-100 text-center">
@@ -56,7 +58,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <p><a href="{{ route('reservations.create') }}" class="btn btn-primary py-3 px-4">Pesan Kendaraan Sempurna Anda</a>
+                                <p><a href="{{ route('reservations.create') }}" class="btn btn-primary py-3 px-4">Pesan
+                                        Kendaraan Sempurna Anda</a>
                                 </p>
                             </div>
                         </div>
@@ -77,23 +80,29 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="carousel-car owl-carousel">
-                        <div class="item">
-                            <div class="car-wrap rounded ftco-animate">
-                                <div class="img rounded d-flex align-items-end"
-                                    style="background-image: url('{{ asset('frontend/images/car-1.jpg') }}');">
-                                </div>
-                                <div class="text">
-                                    <h2 class="mb-0"><a href="#">Mercedes Grand Sedan</a></h2>
-                                    <div class="d-flex mb-3">
-                                        <span class="cat">Cheverolet</span>
-                                        <p class="price ml-auto">$500 <span>/day</span></p>
+                        @foreach ($vehicles as $item)
+                            <div class="item">
+                                <div class="car-wrap rounded ftco-animate">
+                                    <div class="img rounded d-flex align-items-end"
+                                        style="background-image: url('{{ asset('storage/'. $item->vehicle_images) }}');">
                                     </div>
-                                    <p class="d-flex mb-0 d-block">
-                                        <a href="#" class="btn btn-primary py-2 mr-1">Book now</a>
-                                        <a href="{{ route('vehicles.show', ['id' => 3]) }}" class="btn btn-secondary py-2 ml-1">Details</a></p>
+                                    <div class="text">
+                                        <h2 class="mb-0"><a href="#">{{ $item->name }}</a></h2>
+                                        <div class="d-flex mb-3">
+                                            <span class="cat">{{ $item->brand }}</span>
+                                            <p class="price ml-auto">Rp.
+                                                {{ number_format($item->prices->price_24_hours ?? 0, 0, ',', '.') }}
+                                                <span>/Per Hari</span></p>
+                                        </div>
+                                        <p class="d-flex mb-0 d-block">
+                                            <a href="{{ route('reservations.create', ['id' => $item->id]) }}" class="btn btn-primary py-2 mr-1">Pesan Sekarang</a>
+                                            <a href="{{ route('vehicles.show', ['id' => $item->id]) }}"
+                                                class="btn btn-secondary py-2 ml-1">Details</a>
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -111,12 +120,17 @@
                         <span class="subheading">Tentang Kami</span>
                         <h2 class="mb-4">Selamat Datang di Cosmo Rent</h2>
 
-                        <p>Sebuah jalan kecil bernama Nuden melintasi area ini dan menyediakan akses ke berbagai layanan penyewaan kendaraan. </p>
-                            
-                        <p>Di sini, pelanggan dapat menemukan berbagai pilihan untuk menyewa mobil dan motor dalam suasana yang nyaman dan menyenangkan. 
-                            Dalam perjalanannya, pelanggan akan diperhatikan oleh staf kami yang akan memberikan informasi lengkap dan memastikan pengalaman penyewaan yang memuaskan. 
-                            Jika pelanggan bertanya tentang prosedur atau syarat, kami akan dengan senang hati memberikan penjelasan dan membantu mereka kembali dengan kendaraan yang mereka butuhkan. 
-                            Ini adalah kawasan yang ideal untuk menemukan kendaraan sewaan dengan layanan yang ramah dan profesional.</p>
+                        <p>Sebuah jalan kecil bernama Nuden melintasi area ini dan menyediakan akses ke berbagai layanan
+                            penyewaan kendaraan. </p>
+
+                        <p>Di sini, pelanggan dapat menemukan berbagai pilihan untuk menyewa mobil dan motor dalam suasana
+                            yang nyaman dan menyenangkan.
+                            Dalam perjalanannya, pelanggan akan diperhatikan oleh staf kami yang akan memberikan informasi
+                            lengkap dan memastikan pengalaman penyewaan yang memuaskan.
+                            Jika pelanggan bertanya tentang prosedur atau syarat, kami akan dengan senang hati memberikan
+                            penjelasan dan membantu mereka kembali dengan kendaraan yang mereka butuhkan.
+                            Ini adalah kawasan yang ideal untuk menemukan kendaraan sewaan dengan layanan yang ramah dan
+                            profesional.</p>
                         <p><a href="{{ route('vehicles.index') }}" class="btn btn-primary py-3 px-4">Cari Kendaraan</a></p>
                     </div>
                 </div>

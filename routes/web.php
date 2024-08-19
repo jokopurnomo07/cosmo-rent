@@ -37,9 +37,8 @@ Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.ind
 Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles.show');
 
 // Reservation Routes
-Route::get('/reservations/create', [ReservationController::class, 'create'])->name('reservations.create');
+Route::get('/reservations/create/{id?}', [ReservationController::class, 'create'])->name('reservations.create');
 Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
-Route::get('/reservations/{id}', [ReservationController::class, 'show'])->name('reservations.show');
 
 // Payment Routes
 Route::get('/payments/{reservation_id}', [PaymentController::class, 'create'])->name('payments.create');
@@ -77,7 +76,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 
     // Reservation Routes
     Route::resource('reservations', AdminReservationController::class)->names([
-        'index' => 'admin.reservations.index',
         'create' => 'admin.reservations.create',
         'store' => 'admin.reservations.store',
         'show' => 'admin.reservations.show',
@@ -85,6 +83,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'update' => 'admin.reservations.update',
         'destroy' => 'admin.reservations.destroy',
     ]);
+    Route::get('reservations/index/{status}', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
 
     // Review Routes
     Route::resource('reviews', AdminReviewController::class)->names([
@@ -118,7 +117,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     ]);
 });
 
-// Admin Dashboard
+// User Dashboard
 Route::prefix('users')->middleware(['auth', 'role:user'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'indexUser'])->name('user.dashboard');
 });
