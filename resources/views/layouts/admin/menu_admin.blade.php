@@ -26,7 +26,7 @@
                 <a href="{{ route('admin.reservations.index', ['status' => 'pending']) }}" class="submenu-link">Reservasi Baru</a>
             </li>
             <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'canceled') ? 'active' : '' }}">
-                <a href="{{ route('admin.reservations.index', ['status' => 'canceled']) }}" class="submenu-link">Reservasi Dibatalkan</a>
+                <a href="{{ route('admin.reservations.index', ['status' => 'canceled']) }}" class="submenu-link">Reservasi Dibatalkan / Ditolak</a>
             </li>
             <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'confirmed') ? 'active' : '' }}">
                 <a href="{{ route('admin.reservations.index', ['status' => 'confirmed']) }}" class="submenu-link">Reservasi Dikonfirmasi</a>

@@ -95,7 +95,7 @@
                                                 <span>/Per Hari</span></p>
                                         </div>
                                         <p class="d-flex mb-0 d-block">
-                                            <a href="{{ route('reservations.create', ['id' => $item->id]) }}" class="btn btn-primary py-2 mr-1">Pesan Sekarang</a>
+                                            <a href="{{ route('reservations.create', ['id' => $item->id]) }}" class="btn btn-primary py-2 mr-1">Pesan</a>
                                             <a href="{{ route('vehicles.show', ['id' => $item->id]) }}"
                                                 class="btn btn-secondary py-2 ml-1">Details</a>
                                         </p>
@@ -198,7 +198,7 @@
                 <div class="col-md-6 col-lg-3 justify-content-center counter-wrap ftco-animate">
                     <div class="block-18">
                         <div class="text text-border d-flex align-items-center">
-                            <strong class="number" data-number="5">0</strong>
+                            <strong class="number" data-number="10">0</strong>
                             <span>Tahun <br>Pengalaman</span>
                         </div>
                     </div>
@@ -206,7 +206,7 @@
                 <div class="col-md-6 col-lg-3 justify-content-center counter-wrap ftco-animate">
                     <div class="block-18">
                         <div class="text text-border d-flex align-items-center">
-                            <strong class="number" data-number="10">0</strong>
+                            <strong class="number" data-number="{{ $totalVehicle }}">0</strong>
                             <span>Jumlah <br>Kendaraan</span>
                         </div>
                     </div>
@@ -214,7 +214,7 @@
                 <div class="col-md-6 col-lg-3 justify-content-center counter-wrap ftco-animate">
                     <div class="block-18">
                         <div class="text text-border d-flex align-items-center">
-                            <strong class="number" data-number="2">0</strong>
+                            <strong class="number" data-number="{{ $totalUser }}">0</strong>
                             <span>Pelanggan <br>yang Bahagia</span>
                         </div>
                     </div>

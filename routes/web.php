@@ -39,10 +39,12 @@ Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles
 // Reservation Routes
 Route::get('/reservations/create/{id?}', [ReservationController::class, 'create'])->name('reservations.create');
 Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+Route::get('/vehicle/reservations', [ReservationController::class, 'searchVehicle'])->name('reservations.search-vehicle');
 
 // Payment Routes
 Route::get('/payments/{reservation_id}', [PaymentController::class, 'create'])->name('payments.create');
 Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+Route::post('/midtrans/notification', [PaymentController::class, 'notificationHandler'])->name('midtrans.notification');
 
 // Review Routes
 Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
@@ -84,6 +86,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'destroy' => 'admin.reservations.destroy',
     ]);
     Route::get('reservations/index/{status}', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
+    Route::post('reservations/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.update-status');
 
     // Review Routes
     Route::resource('reviews', AdminReviewController::class)->names([

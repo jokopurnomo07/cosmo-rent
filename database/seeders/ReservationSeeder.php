@@ -22,6 +22,7 @@ class ReservationSeeder extends Seeder
 
         // Isi data reservasi
         Reservation::create([
+            'trx_id' => uniqid(),
             'user_id' => $user1Id,
             'vehicle_id' => $vehicleAvanzaId,
             'rental_package_id' => 1,
@@ -32,6 +33,7 @@ class ReservationSeeder extends Seeder
         ]);
 
         Reservation::create([
+            'trx_id' => uniqid(),
             'user_id' => $user2Id,
             'vehicle_id' => $vehicleBeatId,
             'rental_package_id' => 1,

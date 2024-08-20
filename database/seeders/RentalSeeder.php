@@ -24,6 +24,7 @@ class RentalSeeder extends Seeder
         $user2Id = User::where('email', 'jane.smith@example.com')->first()->id;
 
         Rental::create([
+            'trx_id' => uniqid(),
             'user_id' => $user1Id,
             'vehicle_id' => $vehicleAvanzaId,
             'rental_package_id' => $packageId,
@@ -34,6 +35,7 @@ class RentalSeeder extends Seeder
         ]);
 
         Rental::create([
+            'trx_id' => uniqid(),
             'user_id' => $user2Id,
             'vehicle_id' => $vehicleBeatId,
             'rental_package_id' => $packageId,

@@ -36,7 +36,7 @@
                                 <th class="text-center">Tipe Kendaraan</th>
                                 <th class="text-center">Nama</th>
                                 <th class="text-center">Status</th>
-                                <th class="text-center">Action</th>
+                                <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>

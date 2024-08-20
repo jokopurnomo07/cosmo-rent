@@ -26,7 +26,7 @@ class VehicleSeeder extends Seeder
             'capacity' => 5,
             'description' => 'A comfortable car for family trips.',
             'status' => 'available',
-            'vehicle_images' => 'camry.jpg',
+            'vehicle_images' => 'vehicles/EF4p0MWzjdKOrZym8T7alVz9vhtD2w5Nkgpa95Xs.png',
         ]);
 
         $car2 = Vehicle::create([
@@ -41,7 +41,7 @@ class VehicleSeeder extends Seeder
             'capacity' => 5,
             'description' => 'A sleek and stylish sedan.',
             'status' => 'available',
-            'vehicle_images' => 'accord.jpg',
+            'vehicle_images' => 'vehicles/xBckB7g70h5H46m6K7gTNLT2EwqeWg6hDL0QamEb.png',
         ]);
 
         // Attach features to cars
@@ -62,7 +62,7 @@ class VehicleSeeder extends Seeder
             'capacity' => 2,
             'description' => 'A sporty motorcycle with great handling.',
             'status' => 'available',
-            'vehicle_images' => 'r15.jpg',
+            'vehicle_images' => 'vehicles/Q44674vRsxMoZIhbVLlih9xrAwHxVAd0Qp23TbFG.png',
         ]);
 
         $motorcycle2 = Vehicle::create([
@@ -77,7 +77,7 @@ class VehicleSeeder extends Seeder
             'capacity' => 2,
             'description' => 'A versatile motorcycle for both city and highway riding.',
             'status' => 'available',
-            'vehicle_images' => 'cbr500r.jpg',
+            'vehicle_images' => 'vehicles/Bzbm4wFzjNhZjFzffLtZTIyXVViRNuXXSaxhD9XQ.jpg',
         ]);
 
         // Attach features to motorcycles

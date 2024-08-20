@@ -158,6 +158,24 @@
         $(document).ready(function() {
             $("#jenis_kendaraan").select2({
                 theme: "bootstrap4",
+                ajax: {
+                    url: "{{ route('reservations.search-vehicle') }}", // Update this with your actual route
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term, // Search query (user input)
+                            vehicle_type: $('#tipe_kendaraan').val(), // Pass the selected vehicle type
+                            _token: "{{ csrf_token() }}" // Include CSRF token if necessary
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data.items // Ensure your response returns data in this format
+                        };
+                    },
+                    cache: true
+                },
             });
 
             function toggleServiceField() {
@@ -172,6 +190,7 @@
 
             $('#tipe_kendaraan').change(function() {
                 toggleServiceField();
+                $("#jenis_kendaraan").val(null).trigger('change');
             });
 
             function updateEndRentDate() {

@@ -23,6 +23,9 @@
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/static/lightbox/css/lightbox.min.css">
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.css">
     <link rel="stylesheet" crossorigin href="{{ asset('admin') }}/assets/compiled/css/extra-component-sweetalert.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" integrity="sha256-FdatTf20PQr/rWg+cAKfl6j4/IY3oohFAJ7gVC3M34E=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+    
 
     @stack('styles')
 </head>
@@ -78,6 +81,8 @@
     
     <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/cleave.min.js"></script>
     <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/addons/cleave-phone.us.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" integrity="sha256-AFAYEOkzB6iIKnTYZOdUf9FFje6lOTYdwRJKwTN5mks=" crossorigin="anonymous"></script>
+    
 
 
     @stack('scripts')

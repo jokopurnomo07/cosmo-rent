@@ -5,13 +5,14 @@ namespace App\Http\Controllers\Frontend;
 use App\Models\Service;
 use App\Models\Vehicle;
 use App\Models\Reservation;
+use App\Models\VehiclePrice;
 use Illuminate\Http\Request;
 use App\Models\RentalPackage;
+use App\Models\ReservationService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreReservationRequest;
-use App\Models\ReservationService;
 
 class ReservationController extends Controller
 {
@@ -37,6 +38,10 @@ class ReservationController extends Controller
     public function store(StoreReservationRequest $request){
         
         DB::beginTransaction();
+        $rentalPackage = RentalPackage::findOrFail($request->rental_package_id);
+        $vehiclePrice = VehiclePrice::where('vehicle_id', $request->vehicle_id)->select('id', 'price_' . $rentalPackage->duration_hours . '_hours')->first();
+        $totalPrice = $vehiclePrice->{'price_' . $rentalPackage->duration_hours . '_hours'};
+
         try{
             $reservation = Reservation::create([
                 'user_id' => Auth::check() ? Auth::user()->id : null,
@@ -51,6 +56,8 @@ class ReservationController extends Controller
                 'address_pickup' => $request->address_pickup,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
+                'total_price' => $totalPrice,
+                'trx_id' => generateUniqueID(Reservation::class, 'trx_id'),
             ]);
 
             if( $request->type == 'car' ){
@@ -68,5 +75,28 @@ class ReservationController extends Controller
             DB::rollBack();
             return redirect()->back()->with('error', 'Failed to add reservation. Please try again.');
         }
+    }
+
+    public function searchVehicle(Request $request){
+
+        $searchTerm = $request->input('q');
+        $vehicleType = $request->input('vehicle_type');
+        $query = Vehicle::where('type', $vehicleType);
+
+        if ($searchTerm) {
+            $query->where('name', 'LIKE', '%' . $searchTerm . '%');
+        }
+
+        $vehicles = $query->select('id', 'name')->limit(10)->get();
+
+        $results = [];
+        foreach ($vehicles as $vehicle) {
+            $results[] = [
+                'id' => $vehicle->id, // The ID of the vehicle
+                'text' => $vehicle->name // The text that will be displayed in the dropdown
+            ];
+        }
+
+        return response()->json(['items' => $results]);
     }
 }

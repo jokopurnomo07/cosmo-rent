@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Menangani pengguna yang tidak login
             $table->foreignId('vehicle_id')->constrained()->onDelete('cascade');
             $table->foreignId('rental_package_id')->constrained()->onDelete('cascade');
+            $table->string('trx_id')->unique();
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->string('time_pickup')->nullable();
