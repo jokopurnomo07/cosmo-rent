@@ -30,7 +30,21 @@
         </tr>
         <tr>
             <td>Nama Kendaraan</td>
-            <td>{{ $reservation->vehicle->name }} Orang</td>
+            <td>{{ $reservation->vehicle->name }}</td>
+        </tr>
+        @if ($reservation->vehicle->type == "car")
+        <tr>
+            <td>Layanan</td>
+            <td>{{ $reservation->services[0]->name }}</td>
+        </tr>
+        @endif
+        <tr>
+            <td>Paket Sewa</td>
+            <td>{{ $reservation->rental_package->name }}</td>
+        </tr>
+        <tr>
+            <td>Total Harga</td>
+            <td>Rp. {{ number_format($reservation->total_price ?? 0, 0, ",", ".") }}</td>
         </tr>
         {{-- <tr>
             <td colspan="2" style="vertical-align: top;">

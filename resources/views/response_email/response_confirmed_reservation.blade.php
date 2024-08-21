@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservation Confirmation</title>
+    <title>Konfirmasi Reservasi</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,26 +73,26 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Reservation Confirmation</h1>
+            <h1>Konfirmasi Reservasi</h1>
         </div>
         <div class="content">
-            <p>Dear {{ $data->user_id != null ? ucwords($data->user->name) : ucwords($data->nama_guest) }},</p>
-            <p>We are pleased to confirm your reservation with the following details:</p>
+            <p>Halo {{ $data->user_id != null ? ucwords($data->user->name) : ucwords($data->nama_guest) }},</p>
+            <p>Kami dengan senang hati mengonfirmasi reservasi Anda dengan rincian sebagai berikut:</p>
             <ul>
-                <li><strong>Reservation ID:</strong> {{ $data->id }}</li>
-                <li><strong>Vehicle:</strong> {{ ucwords($data->vehicle->name) }}</li>
-                <li><strong>Start Date:</strong> {{ date('d-m-Y', strtotime($data->start_date)) }}</li>
-                <li><strong>End Date:</strong> {{ date('d-m-Y', strtotime($data->end_date)) }}</li>
-                <li><strong>Total Price:</strong> {{ number_format($data->total_price ?? 0, 0, ',', '.') }}</li>
+                <li><strong>ID Reservasi:</strong> {{ $data->trx_id }}</li>
+                <li><strong>Kendaraan:</strong> {{ ucwords($data->vehicle->name) }}</li>
+                <li><strong>Tanggal Mulai:</strong> {{ date('d-m-Y', strtotime($data->start_date)) }}</li>
+                <li><strong>Tanggal Berakhir:</strong> {{ date('d-m-Y', strtotime($data->end_date)) }}</li>
+                <li><strong>Total Harga:</strong> Rp{{ number_format($data->total_price ?? 0, 0, ',', '.') }}</li>
             </ul>
-            <p>To complete your reservation, please proceed with the payment by clicking the button below:</p>
-            <a href="{{ $paymentUrl }}" class="button">Pay Now</a>
-            <p>If you wish to cancel your reservation, click the button below:</p>
-            <a href="{{ route('') }}" class="cancel-button">Cancel Reservation</a>
+            <p>Untuk menyelesaikan reservasi Anda, silakan lanjutkan pembayaran dengan mengklik tombol di bawah ini:</p>
+            <a href="{{ $paymentUrl }}" class="button">Bayar Sekarang</a>
+            <p>Jika Anda ingin membatalkan reservasi, klik tombol di bawah ini:</p>
+            <a href="{{ route('reservations.update-status', ['id' => $data->id, 'status' => 'canceled']) }}" class="cancel-button">Batalkan Reservasi</a>
         </div>
         <div class="footer">
-            <p>Thank you for choosing our service!</p>
-            <p>If you have any questions, please contact us at <a href="mailto:support@cosmorent.com">support@cosmorent.com</a>.</p>
+            <p>Terima kasih telah memilih layanan kami!</p>
+            <p>Jika Anda memiliki pertanyaan, silakan hubungi kami di <a href="mailto:support@cosmorent.com">support@cosmorent.com</a>.</p>
         </div>
     </div>
 </body>

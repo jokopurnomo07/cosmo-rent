@@ -14,6 +14,7 @@ class Rental extends Model
     use HasFactory, LogsActivity;
     protected static $logAttributes = ['user_id', 'vehicle_id', 'package_id', 'start_date', 'end_date', 'total_price', 'down_payment_amount', 'status'];
     protected static $logName = 'rental';
+    protected $guarded = [];
 
     public function tapActivity(Activity $activity, string $eventName)
     {

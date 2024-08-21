@@ -26,6 +26,11 @@ class Reservation extends Model
         return $this->belongsTo(Vehicle::class, 'vehicle_id');
     }
 
+    public function rental_package()
+    {
+        return $this->belongsTo(RentalPackage::class, 'rental_package_id');
+    }
+
     public function services()
     {
         return $this->belongsToMany(Service::class, 'reservation_services');

@@ -28,6 +28,8 @@
     <link rel="stylesheet" href="{{ asset('frontend') }}/css/flaticon.css">
     <link rel="stylesheet" href="{{ asset('frontend') }}/css/icomoon.css">
     <link rel="stylesheet" href="{{ asset('frontend') }}/css/style.css">
+    <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.css">
+    <link rel="stylesheet" crossorigin href="{{ asset('admin') }}/assets/compiled/css/extra-component-sweetalert.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" integrity="sha256-FdatTf20PQr/rWg+cAKfl6j4/IY3oohFAJ7gVC3M34E=" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -75,7 +77,8 @@
     <script src="{{ asset('frontend') }}/js/main.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" integrity="sha256-AFAYEOkzB6iIKnTYZOdUf9FFje6lOTYdwRJKwTN5mks=" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
+    <script src="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.js"></script>
+    
     @stack('scripts')
 
 </body>

@@ -14,12 +14,11 @@ class PaymentController extends Controller
     public function notificationHandler(Request $request)
     {
         // Initialize Midtrans Notification
-        $notification = new Notification();
+        // $notification = new Notification();
 
         // Get the order ID and transaction status from the notification
-        $orderId = $notification->order_id;
-        $transactionStatus = $notification->transaction_status;
-        $fraudStatus = $notification->fraud_status;
+        $orderId = $request->order_id;
+        $transactionStatus = $request->transaction_status;
 
         // Find the corresponding reservation
         $reservation = Reservation::where('trx_id', $orderId)->first();
@@ -31,15 +30,8 @@ class PaymentController extends Controller
 
         // Handle different transaction statuses
         if ($transactionStatus == 'capture') {
-            if ($fraudStatus == 'accept') {
-                // Payment success
-                $this->handleSuccess($reservation);
-            } elseif ($fraudStatus == 'challenge') {
-                // Payment under review
-                $this->handlePending($reservation);
-            }
+            $this->handleSuccess($reservation);
         } elseif ($transactionStatus == 'settlement') {
-            // Payment settled
             $this->handleSuccess($reservation);
         } elseif ($transactionStatus == 'pending') {
             // Payment is pending
@@ -49,20 +41,20 @@ class PaymentController extends Controller
             $this->handleFailure($reservation);
         }
 
-        return response()->json(['status' => 'ok']);
+        return redirect()->route('home');
     }
 
     protected function handleSuccess($reservation)
     {
         // Update or create the rental record
         $rental = Rental::updateOrCreate(
-            ['trx_id' => $reservation->trx_id], // Match the rental by reservation ID
+            ['trx_id' => $reservation->trx_id], // Match the rental by transaction ID
             [
-                'user_id' => $reservation->vehicle_id,
+                'user_id' => $reservation->user_id,
                 'vehicle_id' => $reservation->vehicle_id,
                 'rental_package_id' => $reservation->rental_package_id,
-                'start_date' => $reservation->start_rent,
-                'end_date' => $reservation->end_rent,
+                'start_date' => $reservation->start_date,
+                'end_date' => $reservation->end_date,
                 'time_pickup' => $reservation->time_pickup,
                 'nama_guest' => $reservation->nama_guest,
                 'email_guest' => $reservation->email_guest,
@@ -77,14 +69,21 @@ class PaymentController extends Controller
         );
 
         // If it's a car rental, add related services
-        if ($reservation->type == 'car') {
-            RentalService::updateOrCreate(
-                ['rental_id' => $rental->id, 'service_id' => $reservation->services->id],
-                []
-            );
+        if ($reservation->vehicle->type === 'car' && $reservation->services->isNotEmpty()) {
+            foreach ($reservation->services as $service) {
+                RentalService::updateOrCreate(
+                    [
+                        'rental_id' => $rental->id,
+                        'service_id' => $service->id
+                    ],
+                    [] // Optionally, you can add more fields here if needed
+                );
+            }
         }
 
+
         // Additional logic such as sending a confirmation email
+        return redirect()->route('home');
     }
 
     protected function handleFailure($reservation)
@@ -96,7 +95,7 @@ class PaymentController extends Controller
             $rental->update(['status' => 'payment_failed']);
         }
 
-        // Additional logic for failure case
+        return view('response_email.response_payment_failed');
     }
 
     protected function handlePending($reservation)
@@ -108,4 +107,5 @@ class PaymentController extends Controller
             $rental->update(['status' => 'pending']);
         }
     }
+
 }

@@ -223,3 +223,18 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        let a = "{{ session('successCanceled') }}"
+        if (a){
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Berhasil Membatalkan Reservasi',
+                confirmButtonText: 'OK'
+            });
+        }
+        
+    </script>
+@endpush

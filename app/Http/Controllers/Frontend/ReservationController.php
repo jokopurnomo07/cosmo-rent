@@ -8,11 +8,15 @@ use App\Models\Reservation;
 use App\Models\VehiclePrice;
 use Illuminate\Http\Request;
 use App\Models\RentalPackage;
+use App\Mail\NotificationMail;
 use App\Models\ReservationService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\VehicleReservationConfirmation;
 use App\Http\Requests\StoreReservationRequest;
+use App\Mail\ReservationRejectionNotification;
 
 class ReservationController extends Controller
 {
@@ -23,8 +27,8 @@ class ReservationController extends Controller
             $vehicle = Vehicle::with(['features','prices'])->findOrFail($request->id);
         }
 
-        $services = Service::all();
-        $rentalPackages = RentalPackage::all();
+        $services = Service::get();
+        $rentalPackages = RentalPackage::get();
         $vehicles = Vehicle::with(['features','prices'])->get();
 
         return view('frontend.pemesanan', [
@@ -42,6 +46,7 @@ class ReservationController extends Controller
         $vehiclePrice = VehiclePrice::where('vehicle_id', $request->vehicle_id)->select('id', 'price_' . $rentalPackage->duration_hours . '_hours')->first();
         $totalPrice = $vehiclePrice->{'price_' . $rentalPackage->duration_hours . '_hours'};
 
+        
         try{
             $reservation = Reservation::create([
                 'user_id' => Auth::check() ? Auth::user()->id : null,
@@ -61,18 +66,21 @@ class ReservationController extends Controller
             ]);
 
             if( $request->type == 'car' ){
-                $service = ReservationService::create([
+                ReservationService::create([
                     'reservation_id' => $reservation->id,
                     'service_id' => $request->service_id,
                 ]);
             }
-
+            
+            
+            Mail::to($reservation->user_id != null ? $reservation->user->email : $request->email_guest)->send(new VehicleReservationConfirmation($reservation));
             DB::commit();
 
             return redirect()->back()->with('success', true);
 
         }catch(\Exception $e){
             DB::rollBack();
+            dd($e->getMessage());
             return redirect()->back()->with('error', 'Failed to add reservation. Please try again.');
         }
     }
@@ -98,5 +106,24 @@ class ReservationController extends Controller
         }
 
         return response()->json(['items' => $results]);
+    }
+
+    public function updateStatus($status, $id){
+        $reservation = Reservation::find($id);
+        $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
+        if ($reservation) {
+            $reservation->status = $status;
+
+            if ($status == 'rejected' || $status == "canceled") {
+                $reservation->reason_canceled = "User telah membatalkan reservasi.";
+                $status = $status == "rejected" ? "Penolakan" : "Pembatalan"; 
+                Mail::to($reservation->user_id != null ? $reservation->user->email : $reservation->email_guest)->send(new ReservationRejectionNotification($reservation, $status));
+            }
+            
+            $reservation->save();
+            return redirect()->route('home')->with('successCanceled', true);
+        }
+
+        return redirect()->route('home')->with('successCanceled', false);
     }
 }

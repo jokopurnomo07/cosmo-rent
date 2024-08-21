@@ -26,7 +26,6 @@ class DatabaseSeeder extends Seeder
             RentalPackageSeeder::class,
             RentalSeeder::class,
             ReservationSeeder::class,
-            PaymentSeeder::class,
             ReviewSeeder::class,
             FeatureSeeder::class,
             ServiceSeeder::class,

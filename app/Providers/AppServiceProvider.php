@@ -20,9 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY', 'SB-Mid-server-deL7LiPsBalCRdIg0AsiWpzo');
         Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
         Config::$isSanitized = true;
         Config::$is3ds = true;
+        require_once base_path('app/Helpers/KagenouHelper.php');
     }
 }

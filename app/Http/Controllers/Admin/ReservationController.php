@@ -7,6 +7,8 @@ use App\Models\Reservation;
 use Illuminate\Http\Request;
 use App\Mail\NotificationMail;
 use App\Http\Controllers\Controller;
+use App\Mail\ReservationRejectionNotification;
+use App\Mail\VehicleAvailabilityNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
@@ -22,8 +24,8 @@ class ReservationController extends Controller
             $status = ['confirmed'];
         }
 
-        $reservation = Reservation::whereIn('status', $status)->get();
-        $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
+        $reservation = Reservation::whereIn('status', $status)->orderBy('created_at', 'DESC')->get();
+        $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle', 'rental_package']);
 
         return view('admin.reservation.index', [
             'reservation' => $reservation
@@ -32,7 +34,7 @@ class ReservationController extends Controller
 
     public function show($id){
         $reservation = Reservation::findOrFail($id);
-        $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
+        $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle', 'rental_package']);
         
         return view('admin.reservation.show', compact('reservation'));
     }
@@ -45,7 +47,7 @@ class ReservationController extends Controller
 
         $params = [
             'transaction_details' => [
-                'order_id' => $orderId,
+                'order_id' => $reservation->trx_id,
                 'gross_amount' => $amount,
             ],
             'customer_details' => [
@@ -86,14 +88,15 @@ class ReservationController extends Controller
         if ($reservation) {
             $reservation->status = $request->status;
 
-            if ($request->status == 'rejected') {
+            if ($request->status == 'rejected' || $request->status == "canceled") {
                 $reservation->reason_canceled = $request->reason;
+                $status = $request->status == "rejected" ? "Penolakan" : "Pembatalan"; 
+                Mail::to($reservation->user_id != null ? $reservation->user->email : $reservation->email_guest)->send(new ReservationRejectionNotification($reservation, $status));
             }
-
             
             if( $request->status == "confirmed" ){
                 $paymentUrl = $this->createPayment($reservation);
-                Mail::to(Auth::user()->email)->send(new NotificationMail($reservation, $paymentUrl));
+                Mail::to($reservation->user_id != null ? $reservation->user->email : $reservation->email_guest)->send(new VehicleAvailabilityNotification($reservation, $paymentUrl));
             }
             
             $reservation->save();

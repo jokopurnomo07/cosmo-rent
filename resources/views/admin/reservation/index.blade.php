@@ -44,6 +44,7 @@
                             <thead>
                                 <tr>
                                     <th style="width: 5%;">No</th>
+                                    <th style="width: 25%;" class="text-truncate">Trx ID</th>
                                     <th style="width: 25%;" class="text-truncate">Nama Pemesan</th>
                                     <th class="d-none d-md-table-cell" style="width: 15%;">Tanggal Pemesanan</th>
                                     <th class="d-none d-md-table-cell" style="width: 15%;">Tanggal Selesai</th>
@@ -60,6 +61,7 @@
                                 @foreach ($reservation as $item)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
+                                        <td>{{ $item->trx_id }}</td>
                                         <td class="text-truncate" style="max-width: 100px;">
                                             {{ $item->user_id != null ? $item->user->name : $item->nama_guest }}
                                         </td>
@@ -83,9 +85,11 @@
                                                 <span class="badge bg-success">Dikonfirmasi</span>
                                             @endif
                                         </td>
+                                        @if (request('status') == "canceled" || request('status') == 'rejected')
                                         <td class="text-truncate" style="max-width: 100px;">
                                             {{ $item->reason_canceled }}
                                         </td>
+                                        @endif
                                         <td class="text-center">
                                             <div class="btn-group mb-3 btn-group-sm" role="group" aria-label="Basic example">
                                                 <button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip"
@@ -183,12 +187,13 @@
 
                 var reservationId = $('#reservationId').val();
                 var reason = $('#rejectionReason').val();
+                var status = $('.status-select2').val();
 
                 // Hide the modal
                 $('#rejectionModal').modal('hide');
 
                 // Update the status with the reason
-                updateStatus(reservationId, 'rejected', reason);
+                updateStatus(reservationId, status, reason);
             });
         });
         function detail(id){
@@ -208,6 +213,16 @@
         }
 
         function updateStatus(reservationId, status, reason) {
+            // Show the loading animation before making the AJAX request
+            Swal.fire({
+                title: "Mohon tunggu",
+                text: "Sedang memperbarui status...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
             $.ajax({
                 url: "{{ route('admin.reservations.update-status') }}",
                 type: "POST",
@@ -218,27 +233,35 @@
                     reason: reason
                 },
                 success: function(response) {
+                    Swal.close(); // Close the loading animation
                     if (response.success) {
                         Swal.fire({
                             icon: "success",
                             title: "Berhasil",
                             text: "Berhasil Update Status!",
+                        }).then(() => {
+                            location.reload(); // Reload the page after the alert is closed
                         });
-                        location.reload()
                     } else {
                         Swal.fire({
                             icon: "error",
                             title: "Gagal",
                             text: "Gagal Update Status!",
+                        }).then(() => {
+                            location.reload(); // Reload the page after the alert is closed
                         });
-                        location.reload()
                     }
                 },
                 error: function(xhr, status, error) {
-                    // Handle any errors that occurred during the request
-                    alert('An error occurred. Please try again.');
+                    Swal.close(); // Close the loading animation if an error occurs
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "An error occurred. Please try again."
+                    });
                 }
             });
         }
+
     </script>
 @endpush

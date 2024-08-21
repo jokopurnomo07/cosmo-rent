@@ -9,19 +9,17 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class NotificationMail extends Mailable
+class VehicleReservationConfirmation extends Mailable
 {
     use Queueable, SerializesModels;
-    public $data;
-    public $paymentUrl;
 
     /**
      * Create a new message instance.
      */
-    public function __construct($data, $paymentUrl)
+    public $data;
+    public function __construct($data)
     {
         $this->data = $data;
-        $this->paymentUrl = $paymentUrl;
     }
 
     /**
@@ -30,7 +28,7 @@ class NotificationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Notification Mail',
+            subject: 'Konfirmasi Reservasi Kendaraan Anda - CosmoRent',
         );
     }
 
@@ -40,7 +38,7 @@ class NotificationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'email_notification',
+            view: 'response_email.response_reservation',
         );
     }
 
@@ -52,11 +50,5 @@ class NotificationMail extends Mailable
     public function attachments(): array
     {
         return [];
-    }
-
-    public function build()
-    {
-        return $this->view('email_notification')
-                    ->subject('Your Reservation Confirmation');
     }
 }
