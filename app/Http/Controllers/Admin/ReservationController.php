@@ -25,7 +25,13 @@ class ReservationController extends Controller
         }
 
         $reservation = Reservation::whereIn('status', $status)->orderBy('created_at', 'DESC')->get();
-        $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle', 'rental_package']);
+        $reservation->loadMissing([
+            'user:id,name,email,phone,address',
+            'vehicle',
+            'rental_package',
+        ]);
+        $reservation->where('type', 'car')->load('services');
+        
 
         return view('admin.reservation.index', [
             'reservation' => $reservation

@@ -23,24 +23,35 @@
 
         <ul class="submenu">
             <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'pending') ? 'active' : '' }}">
-                <a href="{{ route('admin.reservations.index', ['status' => 'pending']) }}" class="submenu-link">Reservasi Baru</a>
+                <a href="{{ route('admin.reservations.index', ['status' => 'pending']) }}" class="submenu-link">Baru</a>
             </li>
             <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'canceled') ? 'active' : '' }}">
-                <a href="{{ route('admin.reservations.index', ['status' => 'canceled']) }}" class="submenu-link">Reservasi Dibatalkan / Ditolak</a>
+                <a href="{{ route('admin.reservations.index', ['status' => 'canceled']) }}" class="submenu-link">Dibatalkan / Ditolak</a>
             </li>
             <li class="submenu-item {{ (Route::is('admin.reservations.index') && request('status') == 'confirmed') ? 'active' : '' }}">
-                <a href="{{ route('admin.reservations.index', ['status' => 'confirmed']) }}" class="submenu-link">Reservasi Dikonfirmasi</a>
+                <a href="{{ route('admin.reservations.index', ['status' => 'confirmed']) }}" class="submenu-link">Dikonfirmasi</a>
 
             </li>
         </ul>
-
-
     </li>
-    <li class="sidebar-item {{ request()->is('admin/rentals*') ? 'active' : '' }}">
-        <a href="{{ route('admin.rentals.index') }}" class='sidebar-link'>
+    <li class="sidebar-item {{ request()->is('admin/rentals*') ? 'active' : '' }} has-sub">
+        <a href="#" class='sidebar-link'>
             <i class="bi bi-calendar"></i>
             <span>Penyewaan</span>
         </a>
+
+        <ul class="submenu">
+            <li class="submenu-item {{ (Route::is('admin.rentals.index') && request('status') == 'paid') ? 'active' : '' }}">
+                <a href="{{ route('admin.rentals.index', ['status' => 'paid']) }}" class="submenu-link">Baru</a>
+            </li>
+            <li class="submenu-item {{ (Route::is('admin.rentals.index') && request('status') == 'ongoing') ? 'active' : '' }}">
+                <a href="{{ route('admin.rentals.index', ['status' => 'ongoing']) }}" class="submenu-link">Berlangsung</a>
+            </li>
+            <li class="submenu-item {{ (Route::is('admin.rentals.index') && request('status') == 'returned') ? 'active' : '' }}">
+                <a href="{{ route('admin.rentals.index', ['status' => 'returned']) }}" class="submenu-link">Selesai</a>
+
+            </li>
+        </ul>
     </li>
     <li class="sidebar-item {{ request()->is('admin/users*') ? 'active' : '' }}">
         <a href="{{ route('admin.users.index') }}" class='sidebar-link'>

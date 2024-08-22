@@ -62,54 +62,38 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-12 col-xl-12">
+                    <section class="section">
                         <div class="card">
-                            <div class="card-header">
-                                <h4>Log Aktifitas</h4>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="card-title">
+                                    Log Aktifitas
+                                </h5>
                             </div>
                             <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover table-lg">
-                                        <thead>
+                                <table class="table table-striped" id="table1">
+                                    <thead>
+                                        <tr>
+                                            <th>Event</th>
+                                            <th>User</th>
+                                            <th>Deskripsi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($activityLog as $item)
                                             <tr>
-                                                <th>Name</th>
-                                                <th>Comment</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="col-3">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar avatar-md">
-                                                            <img src="./assets/compiled/jpg/5.jpg">
-                                                        </div>
-                                                        <p class="font-bold ms-3 mb-0">Si Cantik</p>
-                                                    </div>
-                                                </td>
+                                                <td class="col-auto">{{ ucwords($item->event) }}</td>
+                                                <td class="col-auto">{{ $item->user != null ? ucwords($item->user->name) : '-' }}</td>
                                                 <td class="col-auto">
-                                                    <p class=" mb-0">Congratulations on your graduation!</p>
+                                                    <p class="mb-0">{{ $item->description }}</p>
                                                 </td>
                                             </tr>
-                                            <tr>
-                                                <td class="col-3">
-                                                    <div class="d-flex align-items-center">
-                                                        <div class="avatar avatar-md">
-                                                            <img src="./assets/compiled/jpg/2.jpg">
-                                                        </div>
-                                                        <p class="font-bold ms-3 mb-0">Si Ganteng</p>
-                                                    </div>
-                                                </td>
-                                                <td class="col-auto">
-                                                    <p class=" mb-0">Wow amazing design! Can you make another tutorial for
-                                                        this design?</p>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                    </div>
+            
+                    </section>
                 </div>
             </div>
         </section>

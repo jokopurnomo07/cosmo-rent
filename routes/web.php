@@ -68,7 +68,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 
     // Rental Routes
     Route::resource('rentals', RentalController::class)->names([
-        'index' => 'admin.rentals.index',
         'create' => 'admin.rentals.create',
         'store' => 'admin.rentals.store',
         'show' => 'admin.rentals.show',
@@ -76,6 +75,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'update' => 'admin.rentals.update',
         'destroy' => 'admin.rentals.destroy',
     ]);
+    Route::get('rentals/index/{status}', [RentalController::class, 'index'])->name('admin.rentals.index');
+    Route::post('rentals/status', [RentalController::class, 'updateStatus'])->name('admin.rentals.update-status');
+    
 
     // Reservation Routes
     Route::resource('reservations', AdminReservationController::class)->names([

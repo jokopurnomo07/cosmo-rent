@@ -18,14 +18,17 @@
     <link rel="stylesheet" crossorigin href="{{ asset('admin') }}/assets/compiled/css/table-datatable.css">
 
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/filepond/filepond.css">
-    <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css">
+    <link rel="stylesheet"
+        href="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.css">
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/toastify-js/src/toastify.css">
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/static/lightbox/css/lightbox.min.css">
     <link rel="stylesheet" href="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.css">
     <link rel="stylesheet" crossorigin href="{{ asset('admin') }}/assets/compiled/css/extra-component-sweetalert.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" integrity="sha256-FdatTf20PQr/rWg+cAKfl6j4/IY3oohFAJ7gVC3M34E=" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css"
+        integrity="sha256-FdatTf20PQr/rWg+cAKfl6j4/IY3oohFAJ7gVC3M34E=" crossorigin="anonymous">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@x.x.x/dist/select2-bootstrap4.min.css">
+
 
     @stack('styles')
 </head>
@@ -40,7 +43,7 @@
 
                 @yield('content')
 
-            </div> 
+            </div>
             <footer>
                 <div class="footer clearfix mb-0 text-muted">
                     <div class="float-start">
@@ -57,7 +60,7 @@
     <script src="{{ asset('admin') }}/assets/static/js/components/dark.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 
-    
+
     <script src="{{ asset('admin') }}/assets/extensions/jquery/jquery.min.js"></script>
     <script src="{{ asset('admin') }}/assets/compiled/js/app.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/simple-datatables/umd/simple-datatables.js"></script>
@@ -66,24 +69,33 @@
     <script src="{{ asset('admin') }}/assets/static/js/pages/parsley.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/fortawesome/fontawesome-free/js/all.min.js"></script>
 
-    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js"></script>
-    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js"></script>
-    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js"></script>
-    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js"></script>
-    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-filter/filepond-plugin-image-filter.min.js"></script>
-    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js"></script>
-    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js"></script>
+    <script
+        src="{{ asset('admin') }}/assets/extensions/filepond-plugin-file-validate-size/filepond-plugin-file-validate-size.min.js">
+    </script>
+    <script
+        src="{{ asset('admin') }}/assets/extensions/filepond-plugin-file-validate-type/filepond-plugin-file-validate-type.min.js">
+    </script>
+    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-crop/filepond-plugin-image-crop.min.js">
+    </script>
+    <script
+        src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-exif-orientation/filepond-plugin-image-exif-orientation.min.js">
+    </script>
+    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-filter/filepond-plugin-image-filter.min.js">
+    </script>
+    <script
+        src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-preview/filepond-plugin-image-preview.min.js">
+    </script>
+    <script src="{{ asset('admin') }}/assets/extensions/filepond-plugin-image-resize/filepond-plugin-image-resize.min.js">
+    </script>
     <script src="{{ asset('admin') }}/assets/extensions/filepond/filepond.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/toastify-js/src/toastify.js"></script>
     <script src="{{ asset('admin') }}/assets/static/js/pages/filepond.js"></script>
     <script src="{{ asset('admin') }}/assets/static/lightbox/js/lightbox.min.js"></script>
     <script src="{{ asset('admin') }}/assets/extensions/sweetalert2/sweetalert2.min.js"></script>
-    
+
     <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/cleave.min.js"></script>
     <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/addons/cleave-phone.us.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" integrity="sha256-AFAYEOkzB6iIKnTYZOdUf9FFje6lOTYdwRJKwTN5mks=" crossorigin="anonymous"></script>
-    
-
 
     @stack('scripts')
 </body>

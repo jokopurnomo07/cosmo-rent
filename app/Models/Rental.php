@@ -16,6 +16,26 @@ class Rental extends Model
     protected static $logName = 'rental';
     protected $guarded = [];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function vehicle()
+    {
+        return $this->belongsTo(Vehicle::class, 'vehicle_id');
+    }
+
+    public function rental_package()
+    {
+        return $this->belongsTo(RentalPackage::class, 'rental_package_id');
+    }
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'rental_services');
+    }
+
     public function tapActivity(Activity $activity, string $eventName)
     {
         $activity->description = "{$eventName} rental for vehicle ID: {$this->vehicle_id}";

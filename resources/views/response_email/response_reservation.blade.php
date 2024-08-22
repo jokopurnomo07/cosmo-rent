@@ -99,7 +99,7 @@
             </div>
             <div class="info">
                 <label>Total Harga:</label>
-                <p>Rp {{ number_format($data->total_price ?? 0, 0, ",", ".") }}</p>
+                <p>Rp {{ number_format($data->total_price ?? 0, 0, ',', '.') }}</p>
             </div>
 
             <div class="info">

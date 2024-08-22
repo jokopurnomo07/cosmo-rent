@@ -9,8 +9,10 @@ use App\Models\VehiclePrice;
 use Illuminate\Http\Request;
 use App\Models\RentalPackage;
 use App\Mail\NotificationMail;
+use App\Events\ReservationCreated;
 use App\Models\ReservationService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -46,7 +48,6 @@ class ReservationController extends Controller
         $vehiclePrice = VehiclePrice::where('vehicle_id', $request->vehicle_id)->select('id', 'price_' . $rentalPackage->duration_hours . '_hours')->first();
         $totalPrice = $vehiclePrice->{'price_' . $rentalPackage->duration_hours . '_hours'};
 
-        
         try{
             $reservation = Reservation::create([
                 'user_id' => Auth::check() ? Auth::user()->id : null,
@@ -66,15 +67,21 @@ class ReservationController extends Controller
             ]);
 
             if( $request->type == 'car' ){
-                ReservationService::create([
+                $reservation = ReservationService::create([
                     'reservation_id' => $reservation->id,
                     'service_id' => $request->service_id,
                 ]);
             }
             
-            
+            Log::info('Dispatching ReservationCreated event', ['reservation' => $reservation]);
+            event(new ReservationCreated($reservation));
+
+        // Log after dispatching event
+        Log::info('Event dispatched successfully');
+        
             Mail::to($reservation->user_id != null ? $reservation->user->email : $request->email_guest)->send(new VehicleReservationConfirmation($reservation));
             DB::commit();
+
 
             return redirect()->back()->with('success', true);
 

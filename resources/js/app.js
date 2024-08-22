@@ -1,7 +1,14 @@
-import './bootstrap';
+import Echo from 'laravel-echo';
+window.Pusher = require('pusher-js');
 
-import Alpine from 'alpinejs';
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: window.pusherKey,
+    cluster: window.pusherCluster,
+    encrypted: true,
+});
 
-window.Alpine = Alpine;
-
-Alpine.start();
+window.Echo.channel('reservations')
+    .listen('.reservation.created', (event) => {
+        console.log('Reservation Created:', event.reservation);
+    });

@@ -22,29 +22,29 @@ class StoreReservationRequest extends FormRequest
     
     public function rules()
     {
-        return [
-            'type' => 'required|in:motorcycle,car',
-            'service_id' => 'required|exists:services,id',
-            'masa_sewa' => 'required|integer|min:1|max:30',
-            'rental_package_id' => 'required|exists:rental_packages,id',
-            'start_rent' => 'required|date|after_or_equal:today',
-            'end_rent' => 'required|date|after:start_rent',
-            'time_pickup' => 'required|date_format:H:i',
-            'vehicle_id' => 'required|exists:vehicles,id',
-            'address_pickup' => 'required|string|min:10|max:255',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'email_guest' => 'required|email|max:255',
-            'nama_guest' => 'required|string|min:3|max:255',
-            'no_hp_guest' => 'required|string|min:10|max:15',
-        ];
+         return [
+             'type' => 'required|in:motorcycle,car',
+             'service_id' => 'required_if:type,car|nullable|exists:services,id',
+             'masa_sewa' => 'required|integer|min:1|max:30',
+             'rental_package_id' => 'required|exists:rental_packages,id',
+             'start_rent' => 'required|date|after_or_equal:today',
+             'end_rent' => 'required|date|after:start_rent',
+             'time_pickup' => 'required|date_format:H:i',
+             'vehicle_id' => 'required|exists:vehicles,id',
+             'address_pickup' => 'required|string|min:10|max:255',
+             'latitude' => 'required|numeric',
+             'longitude' => 'required|numeric',
+             'email_guest' => 'required|email|max:255',
+             'nama_guest' => 'required|string|min:3|max:255',
+             'no_hp_guest' => 'required|string|min:10|max:15',
+         ];
     }
 
     public function messages()
     {
         return [
             'type.required' => 'Tipe kendaraan harus dipilih.',
-            'service_id.required' => 'Layanan harus dipilih.',
+            'service_id.required_if' => 'Layanan harus dipilih jika kendaraan adalah mobil.',
             'masa_sewa.required' => 'Masa sewa harus dipilih.',
             'rental_package_id.required' => 'Paket sewa harus dipilih.',
             'start_rent.required' => 'Tanggal mulai sewa harus dipilih.',
@@ -59,4 +59,6 @@ class StoreReservationRequest extends FormRequest
             'no_hp_guest.required' => 'Nomor telepon harus diisi.',
         ];
     }
+
+     
 }
