@@ -1,6 +1,5 @@
 <?php
 
-use App\Events\ReservationCreated;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UsersController;
@@ -9,12 +8,10 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Frontend\ReviewController;
 use App\Http\Controllers\Frontend\PaymentController;
 use App\Http\Controllers\Frontend\VehicleController;
 use App\Http\Controllers\Frontend\ReservationController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
-use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
 
@@ -49,9 +46,6 @@ Route::get('reservations/{status}/{id}/', [ReservationController::class, 'update
 Route::get('/payments/{reservation_id}', [PaymentController::class, 'create'])->name('payments.create');
 Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
 Route::get('/midtrans/notification', [PaymentController::class, 'notificationHandler'])->name('midtrans.notification');
-
-// Review Routes
-Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
 // Admin Dashboard
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
@@ -98,17 +92,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('reservations/index/{status}', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
     Route::post('reservations/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.update-status');
 
-    // Review Routes
-    Route::resource('reviews', AdminReviewController::class)->names([
-        'index' => 'admin.reviews.index',
-        'create' => 'admin.reviews.create',
-        'store' => 'admin.reviews.store',
-        'show' => 'admin.reviews.show',
-        'edit' => 'admin.reviews.edit',
-        'update' => 'admin.reviews.update',
-        'destroy' => 'admin.reviews.destroy',
-    ]);
-
     Route::resource('users', UsersController::class)->names([
         'index' => 'admin.users.index',
         'create' => 'admin.users.create',
@@ -119,15 +102,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'destroy' => 'admin.users.destroy',
     ]);
 
-    Route::resource('reports', ReportController::class)->names([
-        'index' => 'admin.reports.index',
-        'create' => 'admin.reports.create',
-        'store' => 'admin.reports.store',
-        'show' => 'admin.reports.show',
-        'edit' => 'admin.reports.edit',
-        'update' => 'admin.reports.update',
-        'destroy' => 'admin.reports.destroy',
-    ]);
 });
 
 

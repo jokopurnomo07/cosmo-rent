@@ -24,9 +24,6 @@ class DatabaseSeeder extends Seeder
             VehicleSeeder::class,
             VehiclePriceSeeder::class,
             RentalPackageSeeder::class,
-            RentalSeeder::class,
-            ReservationSeeder::class,
-            ReviewSeeder::class,
             FeatureSeeder::class,
             ServiceSeeder::class,
         ]);
