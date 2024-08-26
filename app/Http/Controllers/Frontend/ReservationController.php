@@ -65,19 +65,17 @@ class ReservationController extends Controller
                 'total_price' => $totalPrice,
                 'trx_id' => generateUniqueID(Reservation::class, 'trx_id'),
             ]);
-
-            if( $request->type == 'car' ){
-                $reservation = ReservationService::create([
+            
+            if ($request->type == 'car') {
+                $reservationService = ReservationService::create([
                     'reservation_id' => $reservation->id,
                     'service_id' => $request->service_id,
                 ]);
             }
             
-            Log::info('Dispatching ReservationCreated event', ['reservation' => $reservation]);
-            event(new ReservationCreated($reservation));
-
-        // Log after dispatching event
-        Log::info('Event dispatched successfully');
+            $newReservation = Reservation::findOrFail($reservation->id);
+            $newReservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
+            event(new ReservationCreated($newReservation));
         
             Mail::to($reservation->user_id != null ? $reservation->user->email : $request->email_guest)->send(new VehicleReservationConfirmation($reservation));
             DB::commit();

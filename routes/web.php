@@ -1,20 +1,22 @@
 <?php
 
-use App\Http\Controllers\Admin\UsersController;
+use App\Events\ReservationCreated;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\RentalController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Frontend\ReviewController;
 use App\Http\Controllers\Frontend\PaymentController;
 use App\Http\Controllers\Frontend\VehicleController;
 use App\Http\Controllers\Frontend\ReservationController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
-use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +28,7 @@ use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
 
 // Frontend Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -53,6 +56,10 @@ Route::post('/reviews', [ReviewController::class, 'store'])->name('reviews.store
 // Admin Dashboard
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+
 
     // Vehicle Routes
     Route::get('/api/checkbox-options', [AdminVehicleController::class, 'getOptions'])->name('admin.vehicles.checkbox');
@@ -121,11 +128,6 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'update' => 'admin.reports.update',
         'destroy' => 'admin.reports.destroy',
     ]);
-});
-
-// User Dashboard
-Route::prefix('users')->middleware(['auth', 'role:user'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'indexUser'])->name('user.dashboard');
 });
 
 

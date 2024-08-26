@@ -97,7 +97,10 @@
     <script src="{{ asset('template_login') }}/app-assets/vendors/js/forms/cleave/addons/cleave-phone.us.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js" integrity="sha256-AFAYEOkzB6iIKnTYZOdUf9FFje6lOTYdwRJKwTN5mks=" crossorigin="anonymous"></script>
 
+    <script src="{{asset('js/app.js')}}"></script>
+
     @stack('scripts')
+
 </body>
 
 </html>

@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use Midtrans\Snap;
 use App\Models\Reservation;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Mail\NotificationMail;
 use App\Http\Controllers\Controller;
-use App\Mail\ReservationRejectionNotification;
-use App\Mail\VehicleAvailabilityNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\VehicleAvailabilityNotification;
+use App\Mail\ReservationRejectionNotification;
 
 class ReservationController extends Controller
 {
@@ -33,8 +34,11 @@ class ReservationController extends Controller
         $reservation->where('type', 'car')->load('services');
         
 
+        
+        $notifications = Notification::where('is_read', false)->get();
         return view('admin.reservation.index', [
-            'reservation' => $reservation
+            'reservation' => $reservation,
+            'notifications' => $notifications
         ]);
     }
 

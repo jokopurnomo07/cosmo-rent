@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->string('type');
-            $table->text('data');
+            $table->string('type'); // Type of notification
+            $table->json('data'); // Store any additional data as JSON
             $table->boolean('is_read')->default(false);
             $table->timestamps();
         });

@@ -32,5 +32,17 @@ class VehiclePriceSeeder extends Seeder
             'price_12_hours' => 75000,
             'price_24_hours' => 100000,
         ]);
+        VehiclePrice::create([
+            'vehicle_id' => 3,
+            'price_4_hours' => 50000,
+            'price_12_hours' => 75000,
+            'price_24_hours' => 100000,
+        ]);
+        VehiclePrice::create([
+            'vehicle_id' => 4,
+            'price_4_hours' => 50000,
+            'price_12_hours' => 75000,
+            'price_24_hours' => 100000,
+        ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -13,6 +14,7 @@ class UsersController extends Controller
             $query->where('name', 'user');
         })->get();
         
-        return view('admin.users.index', ['users' => $users]);
+        $notifications = Notification::where('is_read', false)->get();
+        return view('admin.users.index', ['users' => $users, 'notifications' => $notifications]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Rental;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -26,8 +27,11 @@ class RentalController extends Controller
         $rentals->where('type', 'car')->load('services');
         
 
+        
+        $notifications = Notification::where('is_read', false)->get();
         return view('admin.rentals.index', [
             'rentals' => $rentals,
+            'notifications' => $notifications,
         ]);
     }
 

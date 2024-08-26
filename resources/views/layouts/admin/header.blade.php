@@ -23,10 +23,22 @@
                                 <h6>Notifications</h6>
                             </li>
                             <div id="notification-list">
-                                <!-- Notifications will be appended here -->
+                                @foreach($notifications as $notification)
+                                <li class="dropdown-item notification-item" data-id="{{ $notification->id }}" onclick="markAsRead({{ $notification->id }})">
+                                    <a class="d-flex align-items-center" href="#">
+                                        <div class="notification-icon bg-primary">
+                                            <i class="bi bi-calendar-check"></i>
+                                        </div>
+                                        <div class="notification-text ms-4">
+                                            <p class="notification-title font-bold">Reservasi Baru</p>
+                                            <p class="notification-subtitle font-thin text-sm">Ada reservasi baru nih dengan nomor transaksi berikut {{ $notification->data['trx_id'] }}</p>
+                                        </div>
+                                    </a>
+                                </li>
+                                @endforeach
                             </div>
                             <li>
-                                <p class="text-center py-2 mb-0"><a href="#">See all notifications</a></p>
+                                <p class="text-center py-2 mb-0" id="mark-all-as-read"><a href="#">Tandai Semua Sudah Dibaca</a></p>
                             </li>
                         </ul>
                     </li>
@@ -76,3 +88,114 @@
         </div>
     </nav>
 </header>
+
+@push('scripts')
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+    <script>
+        // Enable pusher logging - don't include this in production
+        Pusher.logToConsole = true;
+
+        var pusher = new Pusher('f98b3d4b520dc87e2e8c', {
+        cluster: 'ap1'
+        });
+
+        var channel = pusher.subscribe('reservations');
+
+        // Bind to the event
+        channel.bind('reservation.created', function(data) {
+            // Call the function to handle the notification
+            handleNotification(data);
+        });
+
+        // Function to handle the notification
+        function handleNotification(data) {
+            // Format the date if needed
+            var createdAt = new Date(data.reservation.created_at);
+            var formattedDate = formatDate(createdAt); 
+            // Create the notification HTML
+            var notificationHtml = `
+                <li class="dropdown-item notification-item" data-id="${data.reservation.id}" onclick="markAsRead(${data.reservation.id})">
+                    <a class="d-flex align-items-center" href="/admin/reservations/index/pending">
+                        <div class="notification-icon bg-primary">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div class="notification-text ms-4">
+                            <p class="notification-title font-bold">Reservasi Baru</p>
+                            <p class="notification-subtitle font-thin text-sm">Ada reservasi baru nih dengan nomor transaksi berikut ${data.reservation.trx_id}</p>
+                        </div>
+                    </a>
+                </li>
+            `;
+
+            // Append the new notification to the list
+            $('#notification-list').prepend(notificationHtml);
+
+            // Update the notification count
+            updateNotificationCount();
+        }
+
+        // Function to format the date to d-m-Y
+        function formatDate(date) {
+            var day = ("0" + date.getDate()).slice(-2);
+            var month = ("0" + (date.getMonth() + 1)).slice(-2);
+            var year = date.getFullYear();
+            return day + "-" + month + "-" + year;
+        }
+
+        // Function to update the notification count
+        function updateNotificationCount() {
+            // Get the number of unread notifications
+            var unreadCount = $('#notification-list .notification-item:not(.read)').length;
+            $('#notification-count').text(unreadCount);
+        }
+
+        // Function to mark notifications as read
+        function markAsRead(notificationId) {
+            $.ajax({
+                url: '/admin/notifications/mark-as-read',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    notification_id: notificationId
+                },
+                success: function(response) {
+                    // Optionally update the notification appearance or remove it
+                    $(`[data-id="${notificationId}"]`).addClass('read');
+                    
+                    // Update the notification count
+                    updateNotificationCount();
+                },
+                error: function(xhr) {
+                    console.error('Error marking notification as read:', xhr);
+                }
+            });
+        }
+
+        // Initial call to update notification count on page load
+        $(document).ready(function() {
+            $('#mark-all-as-read').on('click', function(event) {
+                event.preventDefault(); // Prevent default link behavior
+                
+                $.ajax({
+                    url: '/admin/notifications/mark-all-as-read',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        // Optionally update the notification appearance or remove it
+                        $('#notification-list .notification-item').addClass('read');
+                        updateNotificationCount(); // Update count after marking all as read
+                    },
+                    error: function(xhr) {
+                        console.error('Error marking all notifications as read:', xhr);
+                    }
+                });
+            });
+
+            updateNotificationCount();
+        });
+
+    </script>
+
+@endpush

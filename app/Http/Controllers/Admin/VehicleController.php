@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\UpdateVehicleRequest;
 use App\Models\Feature;
 use App\Models\Vehicle;
 use Illuminate\Support\Str;
+use App\Models\Notification;
 use App\Models\VehiclePrice;
 use Illuminate\Http\Request;
 use App\Models\RentalPackage;
@@ -13,12 +13,14 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VehicleRequest;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\UpdateVehicleRequest;
 
 class VehicleController extends Controller
 {
     public function index(){
         $vehicles = Vehicle::all();
-        return view('admin.vehicles.index', ['vehicles' => $vehicles]);
+        $notifications = Notification::where('is_read', false)->get();
+        return view('admin.vehicles.index', ['vehicles' => $vehicles, 'notifications' => $notifications]);
     }
 
     public function create(){
