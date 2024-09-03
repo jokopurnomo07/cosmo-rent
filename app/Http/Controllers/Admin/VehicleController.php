@@ -28,13 +28,18 @@ class VehicleController extends Controller
             ->orderBy('duration_hours', 'ASC')
             ->get();
 
+
+        
+        $notifications = Notification::where('is_read', false)->get();
+
         return view('admin.vehicles.create', [
             'rentalPackages' => $rentalPackages,
+            'notifications' => $notifications,
         ]);
     }
 
     public function show($id){
-        $vehicle = Vehicle::with(['features', 'prices'])->findOrFail($id); 
+        $vehicle = Vehicle::with(['features', 'prices'])->findOrFail($id);
         return view('admin.vehicles.show', compact('vehicle'));
     }
 
@@ -99,9 +104,11 @@ class VehicleController extends Controller
             ->orderBy('duration_hours', 'ASC')
             ->get();
         $vehicle = Vehicle::with(['features', 'prices'])->findOrFail($id); 
+        $notifications = Notification::where('is_read', false)->get();
         return view('admin.vehicles.edit', [
             'vehicle' => $vehicle,
             'rentalPackages' => $rentalPackages,
+            'notifications' => $notifications,
         ]);
     }
 

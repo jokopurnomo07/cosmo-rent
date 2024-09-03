@@ -25,10 +25,8 @@ class RentalController extends Controller
             'rental_package',
         ]);
         $rentals->where('type', 'car')->load('services');
-        
-
-        
         $notifications = Notification::where('is_read', false)->get();
+
         return view('admin.rentals.index', [
             'rentals' => $rentals,
             'notifications' => $notifications,
@@ -38,6 +36,7 @@ class RentalController extends Controller
     public function updateStatus(Request $request){
         $reservation = Rental::find($request->id);
         $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
+        
         if ($reservation) {
             $reservation->status = $request->status;
             $reservation->save();
