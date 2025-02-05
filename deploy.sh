@@ -1,15 +1,8 @@
 #!/bin/bash
+# Make sure this file has executable permissions, run `chmod +x build-app.sh`
 
-# Make sure this file has executable permissions, run `chmod +x deploy.sh` to ensure it does
-
-# Variable name to check maintenance mode
-ENV_VAR_NAME="MAINTENANCE_MODE"
-
-# Check if the environment variable is set to "true"
-if [[ "${!ENV_VAR_NAME}" = "true" ]]; then
-  echo "Entering maintenance mode..."
-  php artisan down
-fi
+# Exit the script if any command fails
+set -e
 
 # Build assets using NPM
 npm run build
@@ -22,9 +15,3 @@ php artisan config:cache
 php artisan event:cache
 php artisan route:cache
 php artisan view:cache
-
-# Check if the environment variable is set to "false" or not set at all
-if [[ "${!ENV_VAR_NAME}" = "false" ]] || [[ -z "${!ENV_VAR_NAME}" ]]; then
-  echo "Exiting maintenance mode..."
-  php artisan up
-fi
