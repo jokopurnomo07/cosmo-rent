@@ -3,7 +3,9 @@
 
 # Exit the script if any command fails
 set -e
-
+chmod -R 755 public
+chmod -R 755 storage
+chmod -R 755 bootstrap/cache
 # Build assets using NPM
 npm run build
 
@@ -11,7 +13,8 @@ npm run build
 php artisan optimize:clear
 
 # Cache the various components of the Laravel application
-php artisan config:cache
-php artisan event:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:clear
+php artisan cache:clear
+php artisan event:clear
+php artisan route:clear
+php artisan view:clear
