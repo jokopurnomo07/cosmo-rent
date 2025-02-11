@@ -10,11 +10,12 @@ use App\Http\Controllers\Controller;
 class UsersController extends Controller
 {
     public function index(){
-        $users = User::whereHas('roles', function($query) {
+        $users = User::with('roles')->whereHas('roles', function($query) {
             $query->where('name', 'user');
-        })->get();
+        })->paginate(10);        
+    
         
-        $notifications = Notification::where('is_read', false)->get();
+        $notifications = Notification::where('is_read', false)->latest()->paginate(10);
         return view('admin.users.index', ['users' => $users, 'notifications' => $notifications]);
     }
 }

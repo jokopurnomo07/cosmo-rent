@@ -28,10 +28,8 @@ return new class extends Migration
                 'expired',                // Reservasi kadaluarsa karena tidak ada tindakan lebih lanjut
                 'on_hold',                // Reservasi ditunda sementara waktu
                 'rejected',               // Reservasi ditolak oleh admin
+                'paid',
             ])->default('pending');
-            $table->string('nama_guest')->nullable();
-            $table->string('email_guest')->nullable();
-            $table->string('no_hp_guest')->nullable();
             $table->string('address_pickup')->nullable();
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();
@@ -39,6 +37,7 @@ return new class extends Migration
             $table->index('user_id');
             $table->index('vehicle_id');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

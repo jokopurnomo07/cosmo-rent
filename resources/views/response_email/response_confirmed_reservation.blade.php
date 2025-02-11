@@ -85,10 +85,8 @@
                 <li><strong>Tanggal Berakhir:</strong> {{ date('d-m-Y', strtotime($data->end_date)) }}</li>
                 <li><strong>Total Harga:</strong> Rp{{ number_format($data->total_price ?? 0, 0, ',', '.') }}</li>
             </ul>
-            <p>Untuk menyelesaikan reservasi Anda, silakan lanjutkan pembayaran dengan mengklik tombol di bawah ini:</p>
-            <a href="{{ $paymentUrl }}" class="button">Bayar Sekarang</a>
-            <p>Jika Anda ingin membatalkan reservasi, klik tombol di bawah ini:</p>
-            <a href="{{ route('reservations.update-status', ['id' => $data->id, 'status' => 'canceled']) }}" class="cancel-button">Batalkan Reservasi</a>
+            <p>Untuk menyelesaikan reservasi Anda, silakan lanjutkan pembayaran dengan cara login ke dashboard anda.</p>
+            
         </div>
         <div class="footer">
             <p>Terima kasih telah memilih layanan kami!</p>

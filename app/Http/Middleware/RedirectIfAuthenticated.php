@@ -21,10 +21,25 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                $user = Auth::guard($guard)->user();
+                dd($user);
+
+                // Redirect unverified users to the email verification page
+                if (!$user->hasVerifiedEmail()) {
+                    return redirect()->route('verification.notice');
+                }
+
+                // Redirect based on role
+                if ($user->role == 'admin') {
+                    return redirect('/admin/dashboard');
+                }else{
+                    return redirect('/user/dashboard');
+                }
             }
         }
 
         return $next($request);
     }
+
+
 }

@@ -26,7 +26,7 @@ class UserSeeder extends Seeder
             'address' => '123 Admin Street, Anytown',
         ]);
         $adminRole = Role::where('name', 'admin')->first();
-        $admin->assignRole($adminRole);
+        $admin->assignRole($adminRole->name);
 
         // Buat pengguna biasa
         $user = User::create([
@@ -37,7 +37,7 @@ class UserSeeder extends Seeder
             'address' => '123 Main Street, Anytown',
         ]);
         $userRole = Role::where('name', 'user')->first();
-        $user->assignRole($userRole);
+        $user->assignRole($userRole->name);
 
         $user = User::create([
             'name' => 'Jane Smith',
@@ -46,6 +46,6 @@ class UserSeeder extends Seeder
             'phone' => '987654321',
             'address' => '456 Oak Avenue, Othertown',
         ]);
-        $user->assignRole($userRole);
+        $user->assignRole($userRole->name);
     }
 }

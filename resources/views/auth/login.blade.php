@@ -154,12 +154,12 @@
                                     <button class="btn btn-primary w-100" tabindex="4">Sign in</button>
                                 </form>
 
-                                {{-- <p class="text-center mt-2">
-                                    <span>New on our platform?</span>
+                                <p class="text-center mt-2">
+                                    <span>Belum punya akun?</span>
                                     <a href="{{ route('register') }}">
-                                        <span>Create an account</span>
+                                        <span>Daftar</span>
                                     </a>
-                                </p> --}}
+                                </p>
                             </div>
                         </div>
                         <!-- /Login basic -->

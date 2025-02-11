@@ -2,6 +2,7 @@
 @section('title', 'Home')
 
 @section('content')
+    
     <div class="hero-wrap ftco-degree-bg" style="background-image: url('{{ asset('frontend/images/bg_1.jpg') }}');"
         data-stellar-background-ratio="0.5">
         <div class="overlay"></div>

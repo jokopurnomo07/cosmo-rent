@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Models\User;
 use App\Models\Service;
 use App\Models\Vehicle;
 use App\Models\Reservation;
@@ -49,6 +50,8 @@ class ReservationController extends Controller
         $totalPrice = $vehiclePrice->{'price_' . $rentalPackage->duration_hours . '_hours'};
 
         try{
+            User::where('id', Auth::check() ? Auth::user()->id : null)->update(['phone' => $request->no_hp_guest, 'address_pickup' => $request->address_pickup]);
+
             $reservation = Reservation::create([
                 'user_id' => Auth::check() ? Auth::user()->id : null,
                 'vehicle_id' => $request->vehicle_id,
@@ -56,9 +59,6 @@ class ReservationController extends Controller
                 'start_date' => $request->start_rent,
                 'end_date' => $request->end_rent,
                 'time_pickup' => $request->time_pickup,
-                'nama_guest' => $request->nama_guest,
-                'email_guest' => $request->email_guest,
-                'no_hp_guest' => $request->no_hp_guest,
                 'address_pickup' => $request->address_pickup,
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
@@ -77,9 +77,7 @@ class ReservationController extends Controller
             $newReservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
             event(new ReservationCreated($newReservation));
         
-            Mail::to($reservation->user_id != null ? $reservation->user->email : $request->email_guest)->send(new VehicleReservationConfirmation($reservation));
             DB::commit();
-
 
             return redirect()->back()->with('success', true);
 

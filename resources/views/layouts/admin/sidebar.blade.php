@@ -41,7 +41,12 @@
             </div>
         </div>
         <div class="sidebar-menu">
+            @can('isAdmin')
             @include('layouts.admin.menu_admin')
+            @endcan
+            @can('isUser')
+            @include('layouts.admin.menu_user')
+            @endcan
         </div>
     </div>
 </div>

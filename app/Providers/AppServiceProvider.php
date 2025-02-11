@@ -27,8 +27,8 @@ class AppServiceProvider extends ServiceProvider
         Config::$is3ds = true;
         require_once base_path('app/Helpers/KagenouHelper.php');
 
-        if (env('APP_ENV') !== 'local') {
-            URL::forceScheme('https');
-        }
+        // if (env('APP_ENV') !== 'local') {
+        //     URL::forceScheme('https');
+        // }
     }
 }

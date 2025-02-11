@@ -19,6 +19,7 @@
         </div>
     </section>
 
+    @auth
     <section class="ftco-section contact-section">
         <div class="container">
             <div class="row d-flex mb-5 contact-info">
@@ -151,6 +152,21 @@
             </div>
         </div>
     </section>
+    @else
+    <section class="ftco-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <div class="alert alert-warning" role="alert">
+                        <h3 class="alert-heading">Kamu perlu login!</h3>
+                        <p>Silakan login untuk melakukan pemesanan.</p>
+                        <a href="{{ route('login') }}" class="btn btn-primary">Login Sekarang</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    @endauth
 
 @endsection
 @push('scripts')
@@ -218,8 +234,8 @@
                 Swal.fire({
                     icon: 'success',
                     title: '🥳 Berhasil Melakukan Pemesanan',
-                    text: '🥳 Anda akan dihubungi oleh tim kami melalui email ataupun nomor hp yang sudah anda berikan.',
-                    html: 'I will close in <b></b> milliseconds.',
+                    text: '🥳 Silahkan cek pada dashboard anda untuk mengetahui update mengenai reservasi anda.',
+                    html: 'Tertutup otomatis dalam <b></b> milliseconds.',
                     timer: 2000,
                     timerProgressBar: true,
                     didOpen: () => {

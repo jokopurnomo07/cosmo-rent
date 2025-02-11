@@ -9,15 +9,17 @@ use App\Models\Reservation;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
+
 
 class DashboardController extends Controller
 {
     public function index(){
-        $totalVehicle = Vehicle::count();
-        $totalRent = Rental::where('status', 'returned')->count();
-        $totalReservation = Reservation::where('status', 'confirmed')->count();
-        $activityLog = ActivityLog::with('user')->get();
-        $notifications = Notification::where('is_read', false)->get();
+        $totalVehicle = Cache::remember('total_vehicle', 600, fn() => Vehicle::count());
+        $totalRent = Cache::remember('total_rent', 600, fn() => Rental::where('status', 'returned')->count());
+        $totalReservation = Cache::remember('total_reservation', 600, fn() => Reservation::where('status', 'confirmed')->count());
+        $activityLog = ActivityLog::with('user')->latest()->paginate(10);
+        $notifications = Notification::where('is_read', false)->latest()->paginate(10);
         
         return view('admin.dashboard', [
             'totalVehicle' => $totalVehicle,
@@ -29,6 +31,18 @@ class DashboardController extends Controller
     }
 
     public function indexUser(){
-        return view('user.dashboard');
+        $totalVehicle = Cache::remember('total_vehicle', 600, fn() => Vehicle::count());
+        $totalRent = Cache::remember('total_rent', 600, fn() => Rental::where('status', 'returned')->count());
+        $totalReservation = Cache::remember('total_reservation', 600, fn() => Reservation::where('status', 'confirmed')->count());
+        $activityLog = ActivityLog::with('user')->where('user_id', auth()->user()->id)->latest()->paginate(10);
+        $notifications = Notification::where('is_read', false)->latest()->paginate(10);
+        
+        return view('user.dashboard', [
+            'totalVehicle' => $totalVehicle,
+            'totalRent' => $totalRent,
+            'totalReservation' => $totalReservation,
+            'activityLog' => $activityLog,
+            'notifications' => $notifications,
+        ]);
     }
 }

@@ -17,11 +17,19 @@ use App\Http\Requests\UpdateVehicleRequest;
 
 class VehicleController extends Controller
 {
-    public function index(){
-        $vehicles = Vehicle::all();
-        $notifications = Notification::where('is_read', false)->get();
-        return view('admin.vehicles.index', ['vehicles' => $vehicles, 'notifications' => $notifications]);
+    public function index() {
+        $vehicles = Vehicle::select('id', 'name', 'brand', 'model', 'year', 'status')
+            ->latest()
+            ->paginate(10);
+    
+        $notifications = Notification::select('id', 'message')
+            ->where('is_read', false)
+            ->latest()
+            ->paginate(10);
+    
+        return view('admin.vehicles.index', compact('vehicles', 'notifications'));
     }
+    
 
     public function create(){
         $rentalPackages = RentalPackage::select('id', 'name', 'duration_hours')
@@ -30,7 +38,7 @@ class VehicleController extends Controller
 
 
         
-        $notifications = Notification::where('is_read', false)->get();
+        $notifications = Notification::where('is_read', false)->latest()->paginate(10);
 
         return view('admin.vehicles.create', [
             'rentalPackages' => $rentalPackages,
@@ -38,10 +46,11 @@ class VehicleController extends Controller
         ]);
     }
 
-    public function show($id){
+    public function show($id) {
         $vehicle = Vehicle::with(['features', 'prices'])->findOrFail($id);
         return view('admin.vehicles.show', compact('vehicle'));
     }
+    
 
     public function store(VehicleRequest $request)
     {
@@ -86,9 +95,10 @@ class VehicleController extends Controller
 
             // Handle Image Upload
             if ($request->hasFile('image_vehicle')) {
+                Storage::disk('public')->delete($vehicle->vehicle_images);
                 $imagePath = $request->file('image_vehicle')->store('vehicles', 'public');
                 $vehicle->update(['vehicle_images' => $imagePath]);
-            }
+            }            
 
             DB::commit();
 

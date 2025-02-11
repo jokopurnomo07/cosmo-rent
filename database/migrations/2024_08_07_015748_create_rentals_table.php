@@ -30,9 +30,6 @@ return new class extends Migration
                 'payment_failed',         // Pembayaran gagal dilakukan
                 'returned'                // Penyewaan selesai dan kendaraan telah dikembalikan
             ])->default('pending');            
-            $table->string('nama_guest')->nullable();
-            $table->string('email_guest')->nullable();
-            $table->string('no_hp_guest')->nullable();
             $table->string('address_pickup')->nullable();
             $table->string('latitude')->nullable();
             $table->string('longitude')->nullable();

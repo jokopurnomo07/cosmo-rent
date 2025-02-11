@@ -60,12 +60,12 @@
         </a>
     </li>
 
-    {{-- <li class="sidebar-title">Laporan</li>
+    <li class="sidebar-title">Laporan</li>
     <li class="sidebar-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
         <a href="{{ route('admin.reports.index') }}" class='sidebar-link'>
             <i class="bi bi-file-earmark-text"></i>
             <span>Laporan</span>
         </a>
-    </li> --}}
+    </li>
 
 </ul>

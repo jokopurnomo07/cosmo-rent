@@ -17,6 +17,12 @@ class Vehicle extends Model
     protected static $logAttributes = ['name', 'brand', 'model', 'year', 'status'];
     protected static $logName = 'vehicle';
 
+    protected $casts = [
+        'price_4_hours' => 'float',
+        'price_12_hours' => 'float',
+        'price_24_hours' => 'float',
+    ];    
+
     public function features()
     {
         return $this->belongsToMany(Feature::class, 'vehicle_features');

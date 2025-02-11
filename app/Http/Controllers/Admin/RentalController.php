@@ -18,19 +18,26 @@ class RentalController extends Controller
             $status = ['returned'];
         }
 
-        $rentals = Rental::whereIn('status', $status)->orderBy('created_at', 'DESC')->get();
+        $rentals = Rental::whereIn('status', $status)->orderBy('created_at', 'DESC')->latest()->paginate(10);
         $rentals->loadMissing([
             'user:id,name,email,phone,address',
             'vehicle',
             'rental_package',
         ]);
         $rentals->where('type', 'car')->load('services');
-        $notifications = Notification::where('is_read', false)->get();
+        $notifications = Notification::where('is_read', false)->latest()->paginate(10);
 
         return view('admin.rentals.index', [
             'rentals' => $rentals,
             'notifications' => $notifications,
         ]);
+    }
+
+    public function show($id){
+        $rentals = Rental::findOrFail($id);
+        $rentals->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle', 'rental_package']);
+        
+        return view('admin.rentals.show', compact('rentals'));
     }
 
     public function updateStatus(Request $request){

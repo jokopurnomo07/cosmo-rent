@@ -103,9 +103,9 @@
                                     <button class="btn btn-primary w-100" tabindex="6">Sign up</button>
                                 </form>
                                 <p class="text-center mt-2">
-                                    <span>Already have an account?</span>
-                                    <a href="auth-login-basic.html">
-                                        <span>Sign in instead</span>
+                                    <span>Sudah memiliki akun?</span>
+                                    <a href="{{ route('login') }}">
+                                        <span>Login</span>
                                     </a>
                                 </p>
                             </div>

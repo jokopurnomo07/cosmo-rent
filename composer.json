@@ -10,11 +10,13 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
+        "laravel/ui": "^4.6",
+        "maatwebsite/excel": "^3.1",
         "midtrans/midtrans-php": "^2.5",
         "pusher/pusher-php-server": "^7.2",
         "spatie/laravel-activitylog": "^4.8",
         "spatie/laravel-medialibrary": "^10.15",
-        "spatie/laravel-permission": "^6.9",
+        "spatie/laravel-permission": "^6.13",
         "yajra/laravel-datatables": "10.0"
     },
     "require-dev": {

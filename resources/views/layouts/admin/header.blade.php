@@ -29,10 +29,17 @@
                                         <div class="notification-icon bg-primary">
                                             <i class="bi bi-calendar-check"></i>
                                         </div>
+                                        @can('isAdmin')
                                         <div class="notification-text ms-4">
                                             <p class="notification-title font-bold">Reservasi Baru</p>
-                                            <p class="notification-subtitle font-thin text-sm">Ada reservasi baru nih dengan nomor transaksi berikut {{ $notification->data['trx_id'] }}</p>
+                                            <p class="notification-subtitle font-thin text-sm">Ada reservasi baru dengan nomor transaksi berikut {{ $notification->data['trx_id'] }}</p>
                                         </div>
+                                        @else
+                                        <div class="notification-text ms-4">
+                                            <p class="notification-title font-bold">Reservasi Baru</p>
+                                            <p class="notification-subtitle font-thin text-sm">Anda melakukan reservasi baru dengan nomor transaksi berikut {{ $notification->data['trx_id'] }}</p>
+                                        </div>
+                                        @endcan
                                     </a>
                                 </li>
                                 @endforeach
@@ -152,7 +159,7 @@
         // Function to mark notifications as read
         function markAsRead(notificationId) {
             $.ajax({
-                url: '/admin/notifications/mark-as-read',
+                url: '/notifications/mark-as-read',
                 type: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
@@ -177,7 +184,7 @@
                 event.preventDefault(); // Prevent default link behavior
                 
                 $.ajax({
-                    url: '/admin/notifications/mark-all-as-read',
+                    url: '/notifications/mark-all-as-read',
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}'
