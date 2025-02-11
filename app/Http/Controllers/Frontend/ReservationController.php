@@ -41,7 +41,7 @@ class ReservationController extends Controller
             'rentalPackages' => $rentalPackages,
         ]);
     }
-~
+
     public function store(StoreReservationRequest $request){
         
         DB::beginTransaction();
