@@ -22,7 +22,6 @@ class RedirectIfAuthenticated
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
                 $user = Auth::guard($guard)->user();
-                dd($user);
 
                 // Redirect unverified users to the email verification page
                 if (!$user->hasVerifiedEmail()) {
