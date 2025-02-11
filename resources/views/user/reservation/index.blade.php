@@ -68,7 +68,7 @@
                                                     <span class="badge bg-success">Lunas</span>
                                                     @break
                                                 @case('confirmed')
-                                                    <a href="{{ $item->payment_url }}" target="_blank" class="btn btn-success">Menunggu Pembayaran</a>
+                                                    <span class="badge bg-primary">Menunggu Pembayaran</span>
                                                     @break
                                                 @case('failed')
                                                     <span class="badge bg-danger">Gagal</span>
