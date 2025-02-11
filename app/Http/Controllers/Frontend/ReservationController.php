@@ -41,7 +41,7 @@ class ReservationController extends Controller
             'rentalPackages' => $rentalPackages,
         ]);
     }
-
+~
     public function store(StoreReservationRequest $request){
         
         DB::beginTransaction();
@@ -50,7 +50,7 @@ class ReservationController extends Controller
         $totalPrice = $vehiclePrice->{'price_' . $rentalPackage->duration_hours . '_hours'};
 
         try{
-            User::where('id', Auth::check() ? Auth::user()->id : null)->update(['phone' => $request->no_hp_guest, 'address_pickup' => $request->address_pickup]);
+            User::where('id', Auth::check() ? Auth::user()->id : null)->update(['phone' => $request->no_hp_guest, 'address' => $request->address_pickup]);
 
             $reservation = Reservation::create([
                 'user_id' => Auth::check() ? Auth::user()->id : null,
