@@ -1,5 +1,8 @@
 {
-    "php": {
-        "version": "8.2"
-    }
+    "$schema": "https://schema.railpack.com",
+    "packages": {
+        "php": "8.3"
+    },
+    "buildAptPackages": ["libpng-dev", "libjpeg-dev", "libfreetype6-dev"],
+    "phpExtensions": ["gd", "exif"]
 }
