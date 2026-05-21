@@ -13,11 +13,19 @@ nixPkgs = [
     "php83Extensions.fileinfo",
     "php83Extensions.openssl",
     "php83Extensions.gd",
-    "php83Extensions.exif"
+    "php83Extensions.exif",
+    "nodejs_20",
+    "nodePackages.npm"
 ]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader"]
+cmds = [
+    "composer install --no-dev --optimize-autoloader",
+    "npm install"
+]
+
+[phases.build]
+cmds = ["npm run build"]
 
 [start]
 cmd = "php artisan config:cache && php artisan route:cache && php artisan view:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
