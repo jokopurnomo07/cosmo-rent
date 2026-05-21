@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Admin\UsersController;
@@ -19,8 +18,6 @@ use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\User\ReservationController as UserReservationController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
 
-Auth::routes(['verify' => true]);
-
 // Frontend Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -34,7 +31,6 @@ Route::get('/vehicles/{id}', [VehicleController::class, 'show'])->name('vehicles
 Route::get('/reservations/create/{id?}', [ReservationController::class, 'create'])->name('reservations.create');
 Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
 Route::get('/vehicle/reservations', [ReservationController::class, 'searchVehicle'])->name('reservations.search-vehicle');
-// ✅ FIX #4A — added auth middleware; anonymous users were able to cancel any reservation
 Route::get('reservations/{status}/{id}/', [ReservationController::class, 'updateStatus'])
     ->middleware('auth')
     ->name('reservations.update-status');
@@ -45,6 +41,7 @@ Route::post('/payments', [PaymentController::class, 'store'])->name('payments.st
 Route::post('/midtrans/notification', [PaymentController::class, 'notificationHandler'])->name('midtrans.notification');
 Route::get('/payments/finish', [PaymentController::class, 'paymentFinish'])->name('payment.finish');
 
+// Notification Routes
 Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
 Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
@@ -89,6 +86,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('reservations/index/{status}', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
     Route::post('reservations/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.update-status');
 
+    // User Routes
     Route::resource('users', UsersController::class)->names([
         'index'   => 'admin.users.index',
         'create'  => 'admin.users.create',
@@ -99,6 +97,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'destroy' => 'admin.users.destroy',
     ]);
 
+    // Report Routes
     Route::get('/admin/rentals/index', [RentalReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/admin/rentals/export', [RentalReportController::class, 'export'])->name('admin.reports.export');
 });
@@ -107,6 +106,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 Route::prefix('user')->middleware(['auth', 'role:user', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'indexUser'])->name('user.dashboard');
 
+    // Reservation Routes
     Route::resource('reservations', UserReservationController::class)->names([
         'create'  => 'user.reservations.create',
         'store'   => 'user.reservations.store',
@@ -131,10 +131,11 @@ Route::prefix('user')->middleware(['auth', 'role:user', 'verified'])->group(func
     Route::post('rentals/status', [RentalsController::class, 'updateStatus'])->name('user.rentals.update-status');
 });
 
+// Profile Routes
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__.'/auth.php';    
