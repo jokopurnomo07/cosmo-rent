@@ -40,51 +40,67 @@
                         </thead>
                         <tbody>
                             @foreach ($rentals as $item)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $item->trx_id }}</td>
-                                        <td class="text-truncate" style="max-width: 100px;">
-                                            {{ $item->user_id != null ? $item->user->name : $item->nama_guest }}
-                                        </td>
-                                        <td class="d-none d-md-table-cell">{{ date('d-m-Y', strtotime($item->start_date)) }}</td>
-                                        <td class="d-none d-md-table-cell">{{ date('d-m-Y', strtotime($item->end_date)) }}</td>
-                                        <td class="d-none d-lg-table-cell text-truncate" style="max-width: 100px;">
-                                            {{ $item->user_id != null ? $item->user->email : $item->email_guest }}
-                                        </td>
-                                        <td class="d-none d-lg-table-cell">{{ $item->user_id != null ? $item->user->phone : $item->no_hp_guest }}</td>
-                                        <td>
-                                            @if (request('status') == "paid")
-                                                <select class="form-select status-select2" data-reservation-id="{{ $item->id }}">
-                                                    <option value="paid" {{ $item->status == 'paid' ? 'selected' : '' }}>Menunggu Konfirmasi</option>
-                                                    <option value="ongoing" {{ $item->status == 'ongoing' ? 'selected' : '' }}>Berlangsung</option>
-                                                    <option value="returned" {{ $item->status == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
-                                                </select>
-                                            @elseif( request('status') == "ongoing" )
-                                                <select class="form-select status-select2" data-reservation-id="{{ $item->id }}">
-                                                    <option value="ongoing" {{ $item->status == 'ongoing' ? 'selected' : '' }}>Berlangsung</option>
-                                                    <option value="returned" {{ $item->status == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
-                                                </select>
-                                            @else
-                                                <span class="badge bg-success">Selesai</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-outline-primary" onclick="detail({{ $item->id }})">
-                                                <i class="bi bi-info-circle-fill"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                <tr>
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td>{{ $item->trx_id }}</td>
+                                    <td class="text-truncate" style="max-width: 100px;">
+                                        {{ $item->user_id != null ? $item->user->name : $item->nama_guest }}
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        {{ date('d-m-Y', strtotime($item->start_date)) }}
+                                        @if ($item->vehicle && $item->vehicle->type === 'motorcycle' && $item->time_pickup)
+                                            <br><small class="text-muted">{{ $item->time_pickup }}</small>
+                                        @endif
+                                    </td>
+                                    <td class="d-none d-md-table-cell">
+                                        {{ date('d-m-Y', strtotime($item->end_date)) }}
+                                        @if ($item->vehicle && $item->vehicle->type === 'motorcycle' && $item->end_time)
+                                            <br><small class="text-muted">{{ $item->end_time }}</small>
+                                        @endif
+                                    </td>
+                                    <td class="d-none d-lg-table-cell text-truncate" style="max-width: 100px;">
+                                        {{ $item->user_id != null ? $item->user->email : $item->email_guest }}
+                                    </td>
+                                    <td class="d-none d-lg-table-cell">
+                                        {{ $item->user_id != null ? $item->user->phone : $item->no_hp_guest }}
+                                    </td>
+                                    <td>
+                                        @if (request('status') == "paid")
+                                            <select class="form-select status-select2" data-reservation-id="{{ $item->id }}">
+                                                <option value="paid"     {{ $item->status == 'paid'     ? 'selected' : '' }}>Menunggu Konfirmasi</option>
+                                                <option value="ongoing"  {{ $item->status == 'ongoing'  ? 'selected' : '' }}>Berlangsung</option>
+                                                <option value="returned" {{ $item->status == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
+                                            </select>
+                                        @elseif (request('status') == "ongoing")
+                                            <select class="form-select status-select2" data-reservation-id="{{ $item->id }}">
+                                                <option value="ongoing"  {{ $item->status == 'ongoing'  ? 'selected' : '' }}>Berlangsung</option>
+                                                <option value="returned" {{ $item->status == 'returned' ? 'selected' : '' }}>Dikembalikan</option>
+                                            </select>
+                                        @else
+                                            <span class="badge bg-success">Selesai</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-outline-primary" onclick="detail({{ $item->id }})">
+                                            <i class="bi bi-info-circle-fill"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
+
+                    {{-- Pagination --}}
+                    <div class="d-flex justify-content-end mt-3">
+                        {{ $rentals->links() }}
+                    </div>
                 </div>
             </div>
-
         </section>
     </div>
 
-    <div class="modal modal-lg fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalTitle"
-        aria-hidden="true">
+    {{-- Detail Modal --}}
+    <div class="modal modal-lg fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -110,37 +126,35 @@
 @push('scripts')
     <script>
         $(document).ready(function () {
-            
+
             $(".status-select2").select2({
                 theme: "bootstrap4",
             });
 
-            $('.status-select2').on('change', function() {
-                var status = $(this).val();
+            $('.status-select2').on('change', function () {
+                var status        = $(this).val();
                 var reservationId = $(this).data('reservation-id');
-
-                updateStatus(reservationId, status, null);
+                updateStatus(reservationId, status);
             });
-
         });
-        function detail(id){
+
+        function detail(id) {
             $.ajax({
                 type: "GET",
                 url: "/admin/rentals/" + id,
-                success: function(response) {
-                    $('#detailModalTitle').text('Detail Penyewaan')
+                success: function (response) {
+                    $('#detailModalTitle').text('Detail Penyewaan');
                     $('#contentModal').html(response);
                     $('#detailModal').modal('show');
                 },
-                error: function(xhr, status, error) {
+                error: function (xhr, status, error) {
                     console.error('Error fetching detail:', error);
-                    alert('Failed to fetch detail. Please try again.');
+                    alert('Gagal memuat detail. Silakan coba lagi.');
                 }
             });
         }
 
-        function updateStatus(reservationId, status, reason) {
-            // Show the loading animation before making the AJAX request
+        function updateStatus(reservationId, status) {
             Swal.fire({
                 title: "Mohon tunggu",
                 text: "Sedang memperbarui status...",
@@ -157,38 +171,36 @@
                     _token: "{{ csrf_token() }}",
                     id: reservationId,
                     status: status,
-                    reason: reason
                 },
-                success: function(response) {
-                    Swal.close(); // Close the loading animation
+                success: function (response) {
+                    Swal.close();
                     if (response.success) {
                         Swal.fire({
                             icon: "success",
                             title: "Berhasil",
-                            text: "Berhasil Update Status!",
+                            text: "Status berhasil diperbarui!",
                         }).then(() => {
-                            location.reload(); // Reload the page after the alert is closed
+                            location.reload();
                         });
                     } else {
                         Swal.fire({
                             icon: "error",
                             title: "Gagal",
-                            text: "Gagal Update Status!",
+                            text: "Gagal memperbarui status!",
                         }).then(() => {
-                            location.reload(); // Reload the page after the alert is closed
+                            location.reload();
                         });
                     }
                 },
-                error: function(xhr, status, error) {
-                    Swal.close(); // Close the loading animation if an error occurs
+                error: function (xhr, status, error) {
+                    Swal.close();
                     Swal.fire({
                         icon: "error",
                         title: "Error",
-                        text: "An error occurred. Please try again."
+                        text: "Terjadi kesalahan. Silakan coba lagi."
                     });
                 }
             });
         }
-
     </script>
 @endpush

@@ -9,47 +9,64 @@ use App\Http\Controllers\Controller;
 
 class RentalController extends Controller
 {
-    public function index($status){
-        if( $status == "paid" ){
+    public function index($status)
+    {
+        if ($status == "paid") {
             $status = ['paid'];
-        }elseif( $status == "ongoing" ){
+        } elseif ($status == "ongoing") {
             $status = ['ongoing'];
-        }else{
+        } else {
             $status = ['returned'];
         }
+        
+        $rentals = Rental::with([
+                'user:id,name,email,phone,address',
+                'vehicle',
+                'rental_package',
+                'services',
+            ])
+            ->whereIn('status', $status)
+            ->latest()
+            ->paginate(10);
 
-        $rentals = Rental::whereIn('status', $status)->orderBy('created_at', 'DESC')->latest()->paginate(10);
-        $rentals->loadMissing([
-            'user:id,name,email,phone,address',
-            'vehicle',
-            'rental_package',
-        ]);
-        $rentals->where('type', 'car')->load('services');
         $notifications = Notification::where('is_read', false)->latest()->paginate(10);
 
         return view('admin.rentals.index', [
-            'rentals' => $rentals,
+            'rentals'       => $rentals,
             'notifications' => $notifications,
         ]);
     }
 
-    public function show($id){
+    public function show($id)
+    {
         $rentals = Rental::findOrFail($id);
-        $rentals->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle', 'rental_package']);
-        
+        $rentals->loadMissing([
+            'user:id,name,email,phone,address',
+            'services',
+            'vehicle',
+            'rental_package',
+        ]);
+
         return view('admin.rentals.show', compact('rentals'));
     }
 
-    public function updateStatus(Request $request){
-        $reservation = Rental::find($request->id);
-        $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
-        
-        if ($reservation) {
-            $reservation->status = $request->status;
-            $reservation->save();
-            return response()->json(['success' => true]);
+    public function updateStatus(Request $request)
+    {
+        $rental = Rental::findOrFail($request->id);
+        $rental->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
+
+        $rental->status = $request->status;
+
+        if ($request->status === 'ongoing') {
+            $rental->vehicle->status = 'rented';
+            $rental->vehicle->save();
+        } elseif ($request->status === 'returned') {
+            $rental->vehicle->status = 'available';
+            $rental->vehicle->save();
         }
 
-        return response()->json(['success' => false]);
+        $rental->save();
+
+        return response()->json(['success' => true]);
     }
 }

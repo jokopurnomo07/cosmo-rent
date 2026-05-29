@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\User\ReservationController as UserReservationController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
+use App\Http\Controllers\User\BookingHistoryController;
 
 // Frontend Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -36,22 +37,28 @@ Route::get('reservations/{status}/{id}/', [ReservationController::class, 'update
     ->name('reservations.update-status');
 
 // Payment Routes
-Route::get('/payments/{reservation_id}', [PaymentController::class, 'create'])->name('payments.create');
+Route::get('/payments/finish', [PaymentController::class, 'paymentFinish'])->name('payment.finish');
 Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
 Route::post('/midtrans/notification', [PaymentController::class, 'notificationHandler'])->name('midtrans.notification');
-Route::get('/payments/finish', [PaymentController::class, 'paymentFinish'])->name('payment.finish');
+Route::get('/payments/{reservation_id}', [PaymentController::class, 'create'])->name('payments.create');
 
 // Notification Routes
 Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
 Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+Route::post('/notifications/toggle-read',   [NotificationController::class, 'toggleRead'])->name('notifications.toggle-read');
+Route::post('/notifications/mark-unread',   [NotificationController::class, 'markAsUnread'])->name('notifications.mark-unread');
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Admin Dashboard
+// ─────────────────────────────────────────────────────────────────────────────
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 
-    // Vehicle Routes
+
+    // ── Vehicle Routes ────────────────────────────────────────────────────────
     Route::get('/api/checkbox-options', [AdminVehicleController::class, 'getOptions'])->name('admin.vehicles.checkbox');
+    Route::post('vehicles/update/{id}', [AdminVehicleController::class, 'update'])->name('admin.vehicles.update');
     Route::resource('vehicles', AdminVehicleController::class)->names([
         'index'   => 'admin.vehicles.index',
         'create'  => 'admin.vehicles.create',
@@ -60,9 +67,10 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'edit'    => 'admin.vehicles.edit',
         'destroy' => 'admin.vehicles.destroy',
     ]);
-    Route::post('vehicles/update/{id}', [AdminVehicleController::class, 'update'])->name('admin.vehicles.update');
 
-    // Rental Routes
+    // ── Rental Routes ─────────────────────────────────────────────────────────
+    Route::get('rentals/index/{status}', [RentalController::class, 'index'])->name('admin.rentals.index');
+    Route::post('rentals/status', [RentalController::class, 'updateStatus'])->name('admin.rentals.update-status');
     Route::resource('rentals', RentalController::class)->names([
         'create'  => 'admin.rentals.create',
         'store'   => 'admin.rentals.store',
@@ -71,10 +79,20 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'update'  => 'admin.rentals.update',
         'destroy' => 'admin.rentals.destroy',
     ]);
-    Route::get('rentals/index/{status}', [RentalController::class, 'index'])->name('admin.rentals.index');
-    Route::post('rentals/status', [RentalController::class, 'updateStatus'])->name('admin.rentals.update-status');
 
-    // Reservation Routes
+    // ── Reservation Routes ────────────────────────────────────────────────────
+    //
+    // PENTING: Route AJAX (search-vehicle, search-user) HARUS didaftarkan
+    // SEBELUM Route::resource agar Laravel tidak salah menginterpretasikan
+    // string "search-vehicle" sebagai parameter {reservation} dari resource.
+    //
+    Route::get('reservations/index/{status}', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
+    Route::post('reservations/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.update-status');
+
+    // ↓↓ Dua route ini BARU — harus ada sebelum Route::resource ↓↓
+    Route::get('reservations/search-vehicle', [AdminReservationController::class, 'searchVehicle'])->name('admin.reservations.search-vehicle');
+    Route::get('reservations/search-user', [AdminReservationController::class, 'searchUser'])->name('admin.reservations.search-user');
+
     Route::resource('reservations', AdminReservationController::class)->names([
         'create'  => 'admin.reservations.create',
         'store'   => 'admin.reservations.store',
@@ -83,10 +101,8 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'update'  => 'admin.reservations.update',
         'destroy' => 'admin.reservations.destroy',
     ]);
-    Route::get('reservations/index/{status}', [AdminReservationController::class, 'index'])->name('admin.reservations.index');
-    Route::post('reservations/status', [AdminReservationController::class, 'updateStatus'])->name('admin.reservations.update-status');
 
-    // User Routes
+    // ── User Routes ───────────────────────────────────────────────────────────
     Route::resource('users', UsersController::class)->names([
         'index'   => 'admin.users.index',
         'create'  => 'admin.users.create',
@@ -97,17 +113,22 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
         'destroy' => 'admin.users.destroy',
     ]);
 
-    // Report Routes
-    Route::get('/admin/rentals/index', [RentalReportController::class, 'index'])->name('admin.reports.index');
-    Route::get('/admin/rentals/export', [RentalReportController::class, 'export'])->name('admin.reports.export');
+    // ── Report Routes ─────────────────────────────────────────────────────────
+    Route::get('/reports', [RentalReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/reports/export', [RentalReportController::class, 'export'])->name('admin.reports.export');
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
 // User Dashboard
+// ─────────────────────────────────────────────────────────────────────────────
 Route::prefix('user')->middleware(['auth', 'role:user', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'indexUser'])->name('user.dashboard');
 
-    // Reservation Routes
+    Route::get('history', [BookingHistoryController::class, 'index'])->name('user.history.index');
+
+    Route::post('reservations/status', [UserReservationController::class, 'updateStatus'])->name('user.reservations.update-status');
     Route::resource('reservations', UserReservationController::class)->names([
+        'index'   => 'user.reservations.index',
         'create'  => 'user.reservations.create',
         'store'   => 'user.reservations.store',
         'show'    => 'user.reservations.show',
@@ -115,11 +136,10 @@ Route::prefix('user')->middleware(['auth', 'role:user', 'verified'])->group(func
         'update'  => 'user.reservations.update',
         'destroy' => 'user.reservations.destroy',
     ]);
-    Route::get('reservations', [UserReservationController::class, 'index'])->name('user.reservations.index');
-    Route::post('reservations/status', [UserReservationController::class, 'updateStatus'])->name('user.reservations.update-status');
 
-    // Rental Routes
+    Route::post('rentals/status', [RentalsController::class, 'updateStatus'])->name('user.rentals.update-status');
     Route::resource('rentals', RentalsController::class)->names([
+        'index'   => 'user.rentals.index',
         'create'  => 'user.rentals.create',
         'store'   => 'user.rentals.store',
         'show'    => 'user.rentals.show',
@@ -127,15 +147,15 @@ Route::prefix('user')->middleware(['auth', 'role:user', 'verified'])->group(func
         'update'  => 'user.rentals.update',
         'destroy' => 'user.rentals.destroy',
     ]);
-    Route::get('rentals', [RentalsController::class, 'index'])->name('user.rentals.index');
-    Route::post('rentals/status', [RentalsController::class, 'updateStatus'])->name('user.rentals.update-status');
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
 // Profile Routes
+// ─────────────────────────────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 });
 
-require __DIR__.'/auth.php';    
+require __DIR__.'/auth.php';

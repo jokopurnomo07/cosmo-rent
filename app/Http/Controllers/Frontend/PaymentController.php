@@ -4,18 +4,83 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Models\Rental;
 use App\Models\Reservation;
-use Illuminate\Http\Request;
 use App\Models\RentalService;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
+    public function create($reservation_id)
+    {
+        $reservation = Reservation::where('id', $reservation_id)
+            ->where('user_id', auth()->id())
+            ->whereIn('status', ['confirmed'])
+            ->firstOrFail();
+
+        if (!$reservation->payment_url) {
+            return redirect()->route('user.reservations.index')
+                ->with('error', 'Link pembayaran belum tersedia. Hubungi admin.');
+        }
+
+        return redirect()->away($reservation->payment_url);
+    }
+
+    public function store(Request $request)
+    {
+        abort(404);
+    }
+
+    public function paymentFinish(Request $request)
+    {
+        $transactionStatus = $request->query('transaction_status');
+        $orderId           = $request->query('order_id');
+
+        if (!$orderId) {
+            return redirect()->route('user.reservations.index')
+                ->with('error', 'Data pembayaran tidak valid.');
+        }
+
+        $reservation = Reservation::where('trx_id', $orderId)
+            ->where('user_id', auth()->id())
+            ->with(['vehicle', 'services'])
+            ->first();
+
+        if (!$reservation) {
+            return redirect()->route('user.reservations.index')
+                ->with('error', 'Reservasi tidak ditemukan.');
+        }
+
+        if (in_array($transactionStatus, ['capture', 'settlement'])) {
+            if ($reservation->status !== 'paid') {
+                $this->handleSuccess($reservation);
+            }
+
+            return redirect()->route('user.reservations.index')
+                ->with('success', 'Pembayaran berhasil! Reservasi kamu sudah aktif.');
+        }
+
+        if ($transactionStatus === 'pending') {
+            return redirect()->route('user.reservations.index')
+                ->with('info', 'Pembayaran sedang diproses. Kami akan konfirmasi segera.');
+        }
+
+        // deny, expire, cancel
+        if ($reservation->status !== 'failed' && $reservation->status !== 'expired') {
+            $this->handleFailure($reservation);
+        }
+
+        return redirect()->route('user.reservations.index')
+            ->with('error', 'Pembayaran gagal atau dibatalkan. Silakan coba lagi.');
+    }
+
     public function notificationHandler(Request $request)
     {
         try {
-            $notification = new \Midtrans\Notification();
+            \Midtrans\Config::$serverKey    = config('midtrans.server_key');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production');
 
+            $notification      = new \Midtrans\Notification();
             $orderId           = $notification->order_id;
             $transactionStatus = $notification->transaction_status;
 
@@ -31,6 +96,7 @@ class PaymentController extends Controller
                 'capture', 'settlement'    => $this->handleSuccess($reservation),
                 'pending'                  => $this->handlePending($reservation),
                 'deny', 'expire', 'cancel' => $this->handleFailure($reservation),
+                default                    => Log::info('Unhandled transaction status: ' . $transactionStatus),
             };
 
             return response()->json(['status' => 'ok']);
@@ -41,14 +107,13 @@ class PaymentController extends Controller
         }
     }
 
-    public function paymentFinish(Request $request)
+    protected function handleSuccess(Reservation $reservation): void
     {
-        return redirect()->route('home')->with('success', 'Pembayaran sedang diproses.');
-    }
+        if ($reservation->status === 'paid') {
+            return;
+        }
 
-    protected function handleSuccess($reservation)
-    {
-        Reservation::where('trx_id', $reservation->trx_id)->update(['status' => 'paid']);
+        $reservation->update(['status' => 'paid']);
 
         $rental = Rental::updateOrCreate(
             ['trx_id' => $reservation->trx_id],
@@ -76,21 +141,27 @@ class PaymentController extends Controller
                 ]);
             }
         }
+
+        Log::info('Payment success, rental created/updated: ' . $reservation->trx_id);
     }
 
-    protected function handleFailure($reservation)
+    protected function handleFailure(Reservation $reservation): void
     {
-        Reservation::where('trx_id', $reservation->trx_id)
-            ->update(['status' => 'expired']);
+        if (in_array($reservation->status, ['failed', 'expired'])) {
+            return;
+        }
 
-        // If a Rental somehow exists (e.g. a retry scenario), clean it up too
+        $reservation->update(['status' => 'expired']);
+
         Rental::where('trx_id', $reservation->trx_id)
             ->update(['status' => 'payment_failed']);
+
+        Log::info('Payment failed: ' . $reservation->trx_id);
     }
 
-    protected function handlePending($reservation)
+    protected function handlePending(Reservation $reservation): void
     {
-        Reservation::where('trx_id', $reservation->trx_id)
-            ->update(['status' => 'pending']);
+        $reservation->update(['status' => 'pending']);
+        Log::info('Payment pending: ' . $reservation->trx_id);
     }
 }

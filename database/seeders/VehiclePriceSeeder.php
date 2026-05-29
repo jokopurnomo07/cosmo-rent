@@ -4,45 +4,31 @@ namespace Database\Seeders;
 
 use App\Models\Vehicle;
 use App\Models\VehiclePrice;
-use App\Models\RentalPackage;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class VehiclePriceSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $vehicleAvanzaId = Vehicle::where('brand', 'Toyota')->first()->id;
-        $vehicleBeatId = Vehicle::where('brand', 'Honda')->first()->id;
+        $prices = [
+            'AB123CD' => ['price_4_hours' => 100000, 'price_12_hours' => 150000, 'price_24_hours' => 200000],
+            'CD456EF' => ['price_4_hours' =>  50000, 'price_12_hours' =>  75000, 'price_24_hours' => 100000],
+            'GH789IJ' => ['price_4_hours' =>  50000, 'price_12_hours' =>  75000, 'price_24_hours' => 100000],
+            'JK012LM' => ['price_4_hours' =>  50000, 'price_12_hours' =>  75000, 'price_24_hours' => 100000],
+        ];
 
-        // Isi data harga kendaraan
-        VehiclePrice::create([
-            'vehicle_id' => $vehicleAvanzaId,
-            'price_4_hours' => 100000,
-            'price_12_hours' => 150000,
-            'price_24_hours' => 200000,
-        ]);
+        foreach ($prices as $regNumber => $priceData) {
+            $vehicle = Vehicle::where('registration_number', $regNumber)->first();
 
-        VehiclePrice::create([
-            'vehicle_id' => $vehicleBeatId,
-            'price_4_hours' => 50000,
-            'price_12_hours' => 75000,
-            'price_24_hours' => 100000,
-        ]);
-        VehiclePrice::create([
-            'vehicle_id' => 3,
-            'price_4_hours' => 50000,
-            'price_12_hours' => 75000,
-            'price_24_hours' => 100000,
-        ]);
-        VehiclePrice::create([
-            'vehicle_id' => 4,
-            'price_4_hours' => 50000,
-            'price_12_hours' => 75000,
-            'price_24_hours' => 100000,
-        ]);
+            if (!$vehicle) {
+                $this->command->warn("Vehicle dengan registration_number '{$regNumber}' tidak ditemukan. Dilewati.");
+                continue;
+            }
+
+            VehiclePrice::create(array_merge(
+                ['vehicle_id' => $vehicle->id],
+                $priceData
+            ));
+        }
     }
 }

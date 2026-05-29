@@ -6,14 +6,15 @@
         </tr>
         <tr>
             <td>Tipe Kendaraan</td>
-            <td>{{ $vehicle->vehicle_type == 'car' ? 'Mobil' : 'Motor' }}</td>
+            {{-- BUG FIX: $vehicle->vehicle_type tidak ada, kolom di DB adalah 'type' --}}
+            <td>{{ $vehicle->type == 'car' ? 'Mobil' : 'Motor' }}</td>
         </tr>
         <tr>
             <td>Transmisi</td>
             <td>
                 @if ($vehicle->transmission == 'manual')
                     Manual
-                @elseif($vehicle->transmission == 'automatic')
+                @elseif ($vehicle->transmission == 'automatic' || $vehicle->transmission == 'otomatic')
                     Otomatis / Matic
                 @else
                     Manual & Otomatis
@@ -26,7 +27,7 @@
         </tr>
         <tr>
             <td>Plat Nomor Kendaraan</td>
-            <td>{{ ucwords($vehicle->registration_number) }}</td>
+            <td>{{ strtoupper($vehicle->registration_number) }}</td>
         </tr>
         <tr>
             <td>Kapasitas Penumpang</td>
@@ -37,33 +38,24 @@
                 <strong>Fitur</strong><br>
                 @php
                     $features = $vehicle->features->toArray();
-                    if( $features != [] ){
-                        $columns = array_chunk($features, ceil(count($features) / 3)); // Split into 3 columns
-                    }else{
-                        $columns = [];
-                    }
+                    $columns  = $features
+                        ? array_chunk($features, ceil(count($features) / 3))
+                        : [];
                 @endphp
                 <div class="row">
-                    @if ($columns != [])
+                    @if ($columns)
                         @foreach ($columns as $column)
                             <div class="col-md-4">
-                                <ul class="features">
+                                <ul style="list-style: none; padding-left: 0;">
                                     @foreach ($column as $feature)
-                                    @php
-                                        $name = str_replace('_', ' ', $feature['name']);
-                                    @endphp
-                                        <li class="check" style="list-style: none;">
-                                            <i class="fas fa-check"></i>
-                                            {{ ucwords($name) }}
-                                        </li>
+                                        @php $name = str_replace('_', ' ', $feature['name']); @endphp
+                                        <li><i class="fas fa-check text-success me-1"></i>{{ ucwords($name) }}</li>
                                     @endforeach
                                 </ul>
                             </div>
                         @endforeach
                     @else
-                    <div class="col-12 text-center">
-                        Belum ada fitur yang dipilih
-                    </div>
+                        <div class="col-12 text-center text-muted">Belum ada fitur yang dipilih</div>
                     @endif
                 </div>
             </td>
@@ -77,18 +69,21 @@
         <tr>
             <td colspan="2" style="vertical-align: top;">
                 <strong>Gambar Kendaraan</strong><br>
-                @php
-                    $images = $vehicle->vehicle_images;
-                @endphp
-                <div class="row">
-                    @if ($images != null)
+                <div class="row mt-2">
+                    @if ($vehicle->vehicle_images && Storage::disk('public')->exists($vehicle->vehicle_images))
                         <div class="col-md-4">
-                            <a class="example-image-link" href="{{ asset('storage/' . $images) }}" data-lightbox="{{ $images }}">
-                                <img class="example-image" src="{{ asset('storage/' . $images) }}" alt="Foto Kendaraan {{ $vehicle->name }}" style="max-width: 100%; height: auto;">
+                            <a class="example-image-link"
+                               href="{{ asset('storage/' . $vehicle->vehicle_images) }}"
+                               data-lightbox="{{ $vehicle->vehicle_images }}">
+                                <img class="example-image img-fluid rounded"
+                                     src="{{ asset('storage/' . $vehicle->vehicle_images) }}"
+                                     alt="Foto Kendaraan {{ $vehicle->name }}"
+                                     style="max-width: 100%; height: auto; object-fit: cover;">
                             </a>
                         </div>
                     @else
-                        <div class="col-md-12 text-center">
+                        <div class="col-12 text-center text-muted">
+                            <i class="bi bi-image" style="font-size: 2rem;"></i><br>
                             Belum Ada Gambar yang Diupload
                         </div>
                     @endif

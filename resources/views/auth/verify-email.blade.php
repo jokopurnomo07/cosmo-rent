@@ -37,5 +37,28 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Poll every 3 seconds to check if email has been verified
+        const checkVerification = setInterval(async () => {
+            try {
+                const response = await fetch("{{ route('verification.check') }}", {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.verified) {
+                    clearInterval(checkVerification);
+                    // Redirect to user dashboard
+                    window.location.href = "{{ route('user.dashboard') }}";
+                }
+            } catch (e) {
+                // Silent fail — just keep polling
+            }
+        }, 3000);
+    </script>
 </body>
 </html>

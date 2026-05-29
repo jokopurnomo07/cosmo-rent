@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Queue\SerializesModels;
@@ -19,16 +20,30 @@ class ReservationCreated implements ShouldBroadcast
     public function __construct($reservation)
     {
         $this->reservation = $reservation;
-        Notification::create([
-            'type' => 'reservation.created',
-            'data' => [
-                'reservation_id' => $reservation->id,
-                'trx_id' => $reservation->trx_id,
-                'message' => 'New reservation created.',
-                'created_at' => $reservation->created_at->toDateTimeString(),
-            ],
-            'is_read' => false, // Default to unread
-        ]);
+        $admins = User::role('admin')->pluck('id');
+
+        if ($admins->isEmpty()) {
+            return;
+        }
+
+        $now = now();
+
+        Notification::insert(
+            $admins->map(fn($adminId) => [
+                'user_id'    => $adminId,
+                'type'       => 'reservation.created',
+                'data'       => json_encode([
+                    'reservation_id' => $reservation->id,
+                    'trx_id'         => $reservation->trx_id,
+                    'message'        => 'New reservation created.',
+                    'created_at'     => $reservation->created_at->toDateTimeString(),
+                    'user_id'        => $reservation->user_id,
+                ]),
+                'is_read'    => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->toArray()
+        );
     }
 
     public function broadcastOn()

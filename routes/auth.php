@@ -56,4 +56,16 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
                 ->name('logout');
+
+    // Check if email is verified — used by polling on verify-email page
+    Route::get('check-verification', function () {
+        return response()->json([
+            'verified' => auth()->user()->hasVerifiedEmail()
+        ]);
+    })->name('verification.check');
+
+    // Auto-close tab page shown after clicking verification link in email
+    Route::get('email-verified', function () {
+        return view('auth.email-verified');
+    })->name('verification.confirmed');
 });
