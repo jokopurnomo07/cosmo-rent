@@ -15,26 +15,27 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-
         Role::create(['name' => 'admin']);
         Role::create(['name' => 'user']);
+
         $admin = User::create([
             'name' => 'Admin',
             'email' => 'admin@cosmorent.com',
             'password' => Hash::make('password'),
             'phone' => '123456789',
             'address' => '123 Admin Street, Anytown',
+            'email_verified_at' => now(), // ← tambahkan ini
         ]);
         $adminRole = Role::where('name', 'admin')->first();
         $admin->assignRole($adminRole->name);
 
-        // Buat pengguna biasa
         $user = User::create([
             'name' => 'John Doe',
             'email' => 'john.doe@gmail.com',
             'password' => Hash::make('password'),
             'phone' => '123456789',
             'address' => '123 Main Street, Anytown',
+            'email_verified_at' => now(), // ← tambahkan ini
         ]);
         $userRole = Role::where('name', 'user')->first();
         $user->assignRole($userRole->name);
@@ -45,6 +46,7 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'phone' => '987654321',
             'address' => '456 Oak Avenue, Othertown',
+            'email_verified_at' => now(), // ← tambahkan ini
         ]);
         $user->assignRole($userRole->name);
     }

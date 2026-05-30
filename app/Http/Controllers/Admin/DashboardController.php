@@ -31,18 +31,44 @@ class DashboardController extends Controller
     }
 
     public function indexUser(){
-        $totalVehicle = Cache::remember('total_vehicle', 600, fn() => Vehicle::count());
-        $totalRent = Cache::remember('total_rent', 600, fn() => Rental::where('status', 'returned')->count());
-        $totalReservation = Cache::remember('total_reservation', 600, fn() => Reservation::where('status', 'confirmed')->count());
-        $activityLog = ActivityLog::with('user')->where('user_id', auth()->user()->id)->latest()->paginate(10);
-        $notifications = Notification::where('is_read', false)->latest()->paginate(10);
-        
+        $userId = auth()->id();
+
+        // Penyewaan selesai milik user
+        $totalRent = Rental::where('user_id', $userId)
+            ->whereIn('status', ['completed', 'returned'])
+            ->count();
+
+        // Reservasi confirmed milik user
+        $totalReservation = Reservation::where('user_id', $userId)
+            ->where('status', 'confirmed')
+            ->count();
+
+        // Penyewaan sedang aktif
+        $activeRental = Rental::where('user_id', $userId)
+            ->whereIn('status', ['ongoing', 'paid', 'awaiting_confirmation'])
+            ->with('vehicle')
+            ->latest()
+            ->first();
+
+        // 5 riwayat sewa terbaru
+        $recentRentals = Rental::where('user_id', $userId)
+            ->with('vehicle')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Notifikasi — perlu konfirmasi struktur tabel notifications
+        $notifications = Notification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->latest()
+            ->paginate(10);
+
         return view('user.dashboard', [
-            'totalVehicle' => $totalVehicle,
-            'totalRent' => $totalRent,
+            'totalRent'        => $totalRent,
             'totalReservation' => $totalReservation,
-            'activityLog' => $activityLog,
-            'notifications' => $notifications,
+            'activeRental'     => $activeRental,
+            'recentRentals'    => $recentRentals,
+            'notifications'    => $notifications,
         ]);
     }
 }
