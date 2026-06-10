@@ -18,6 +18,9 @@ use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\User\ReservationController as UserReservationController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
 use App\Http\Controllers\User\BookingHistoryController;
+use App\Http\Controllers\Frontend\RentalExtensionController;
+use App\Http\Controllers\Admin\RentalExtensionController as AdminRentalExtensionController;
+use App\Http\Controllers\Admin\RentalTrackingController;
 
 // Frontend Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -41,6 +44,13 @@ Route::get('/payments/finish', [PaymentController::class, 'paymentFinish'])->nam
 Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
 Route::post('/midtrans/notification', [PaymentController::class, 'notificationHandler'])->name('midtrans.notification');
 Route::get('/payments/{reservation_id}', [PaymentController::class, 'create'])->name('payments.create');
+
+// Public Tracking Endpoint for device/webhooks (uses TRACKING_SECRET token header 'X-TRACKING-TOKEN')
+Route::post('/tracking/{rental_id}/add-location', [RentalTrackingController::class, 'addLocationPublic'])->name('tracking.add-location.public');
+
+
+// Extension Finish Payment (after user completes Midtrans payment)
+Route::get('/extensions/finish', [RentalExtensionController::class, 'finish'])->name('extension.finish');
 
 // Notification Routes
 Route::get('/notifications/unread-count', [NotificationController::class, 'getUnreadCount'])->name('notifications.unreadCount');
@@ -116,6 +126,21 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     // ── Report Routes ─────────────────────────────────────────────────────────
     Route::get('/reports', [RentalReportController::class, 'index'])->name('admin.reports.index');
     Route::get('/reports/export', [RentalReportController::class, 'export'])->name('admin.reports.export');
+
+    // ── Rental Extension Routes ───────────────────────────────────────────────
+    Route::get('extensions/index/{status?}', [AdminRentalExtensionController::class, 'index'])->name('admin.extensions.index');
+    Route::get('extensions/{id}', [AdminRentalExtensionController::class, 'show'])->name('admin.extensions.show');
+    Route::post('extensions/{id}/approve', [AdminRentalExtensionController::class, 'approve'])->name('admin.extensions.approve');
+    Route::post('extensions/{id}/reject', [AdminRentalExtensionController::class, 'reject'])->name('admin.extensions.reject');
+    // Simulation removed in production: admin only approves now. No simulate-payment route.
+
+    // ── Rental Tracking Routes ────────────────────────────────────────────────
+    Route::get('tracking', [RentalTrackingController::class, 'index'])->name('admin.tracking.index');
+    Route::get('tracking/{rental_id}', [RentalTrackingController::class, 'show'])->name('admin.tracking.show');
+    Route::get('tracking/{rental_id}/current-location', [RentalTrackingController::class, 'getCurrentLocation'])->name('admin.tracking.current-location');
+    Route::get('tracking/{rental_id}/history', [RentalTrackingController::class, 'getLocationHistory'])->name('admin.tracking.history');
+    Route::post('tracking/{rental_id}/demo', [RentalTrackingController::class, 'generateDemoLocations'])->name('admin.tracking.demo');
+    Route::post('tracking/{rental_id}/add-location', [RentalTrackingController::class, 'addLocation'])->name('admin.tracking.add-location');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -147,6 +172,15 @@ Route::prefix('user')->middleware(['auth', 'role:user', 'verified'])->group(func
         'update'  => 'user.rentals.update',
         'destroy' => 'user.rentals.destroy',
     ]);
+
+        // Debug: Midtrans transaction creation for an extension (LOCAL ONLY)
+        Route::get('debug/extensions/{id}/midtrans', [\App\Http\Controllers\Frontend\RentalExtensionController::class, 'debugMidtrans'])->name('debug.extensions.midtrans');
+
+    // ── Rental Extension Routes ───────────────────────────────────────
+    Route::get('rentals/{rental_id}/extend', [RentalExtensionController::class, 'create'])->name('user.extensions.create');
+    Route::post('rentals/{rental_id}/extend', [RentalExtensionController::class, 'store'])->name('user.extensions.store');
+    Route::get('extensions', [RentalExtensionController::class, 'index'])->name('user.extensions.index');
+    Route::match(['get','post'],'extensions/{id}/pay', [RentalExtensionController::class, 'pay'])->name('user.extensions.pay');
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

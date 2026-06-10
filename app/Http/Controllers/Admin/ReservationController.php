@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-// StoreReservationRequest dihapus — validasi inline di store()
 use App\Mail\VehicleAvailabilityNotification;
 use App\Mail\ReservationRejectionNotification;
 
@@ -152,7 +151,6 @@ class ReservationController extends Controller
                 ]);
             }
 
-            // ── Notifikasi ke semua admin: ada reservasi baru ────────
             $reservation->loadMissing('user');
             $userName = $reservation->user?->name ?? 'Seseorang';
 
@@ -186,7 +184,7 @@ class ReservationController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // SHOW (returns partial HTML for AJAX modal)
+    // SHOW
     // ─────────────────────────────────────────────────────────────────
     public function show($id)
     {
@@ -266,7 +264,6 @@ class ReservationController extends Controller
                 'total_price'       => $totalPrice,
             ]);
 
-            // ── Update layanan ────────────────────────────────────────
             ReservationService::where('reservation_id', $reservation->id)->delete();
 
             if ($request->type === 'car' && $request->service_id) {
@@ -291,7 +288,7 @@ class ReservationController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // AJAX: Search registered users
+    // AJAX: Search users
     // ─────────────────────────────────────────────────────────────────
     public function searchUser(Request $request)
     {
@@ -313,7 +310,7 @@ class ReservationController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // AJAX: Search vehicles (admin version — all non-rented)
+    // AJAX: Search vehicles
     // ─────────────────────────────────────────────────────────────────
     public function searchVehicle(Request $request)
     {
@@ -340,11 +337,15 @@ class ReservationController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // CREATE MIDTRANS PAYMENT LINK (internal helper)
+    // CREATE MIDTRANS PAYMENT LINK
     // ─────────────────────────────────────────────────────────────────
     public function createPayment($reservation)
     {
         try {
+            // Ensure Midtrans config is initialized
+            \Midtrans\Config::$serverKey    = config('midtrans.server_key') ?? env('MIDTRANS_SERVER_KEY');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production') ?? env('MIDTRANS_IS_PRODUCTION', false);
+
             $amount = $reservation->total_price;
 
             $params = [
@@ -370,10 +371,15 @@ class ReservationController extends Controller
                 ],
             ];
 
-            return Snap::createTransaction($params)->redirect_url;
+            Log::info('Midtrans createPayment params', ['reservation_id' => $reservation->id, 'params' => $params]);
+
+            $resp = Snap::createTransaction($params);
+
+            Log::info('Midtrans createPayment response', ['reservation_id' => $reservation->id, 'resp' => $resp]);
+
+            return $resp->redirect_url ?? null;
 
         } catch (\Exception $e) {
-            // dd() dihapus — gunakan Log agar tidak merusak AJAX response
             Log::error('Midtrans createPayment error: ' . $e->getMessage(), [
                 'reservation_id' => $reservation->id,
                 'trx_id'         => $reservation->trx_id,
@@ -383,12 +389,35 @@ class ReservationController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // UPDATE STATUS (with auto-cancel conflict logic)
+    // UPDATE STATUS
     // ─────────────────────────────────────────────────────────────────
     public function updateStatus(Request $request)
     {
         $reservation = Reservation::findOrFail($request->id);
         $reservation->loadMissing(['user:id,name,email,phone,address', 'services', 'vehicle']);
+
+        // ── Guard: double-confirm ─────────────────────────────────────
+        // Mencegah admin klik confirm dua kali — Midtrans menolak order_id
+        // yang sama sehingga createPayment() akan return null dan response
+        // akan 500, tapi status sudah terlanjur ter-set. Guard ini
+        // memutus loop sebelum sampai ke Midtrans.
+        if ($request->status === 'confirmed' && $reservation->status === 'confirmed') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reservasi ini sudah dikonfirmasi sebelumnya.',
+            ], 422);
+        }
+
+        // ── Guard: jangan ubah status reservasi yang sudah paid ───────
+        // Reservasi yang sudah paid berarti sudah ada rental aktif dan
+        // kendaraan sudah ter-lock. Perubahan status di sini bisa
+        // menyebabkan inkonsistensi dengan tabel rentals.
+        if ($reservation->status === 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Reservasi yang sudah dibayar tidak dapat diubah statusnya di sini. Gunakan manajemen rental.',
+            ], 422);
+        }
 
         $autoCanceled = 0;
 
@@ -404,13 +433,11 @@ class ReservationController extends Controller
                 ? "Reservasi {$reservation->trx_id} Anda ditolak. Alasan: {$request->reason}"
                 : "Reservasi {$reservation->trx_id} Anda dibatalkan. Alasan: {$request->reason}";
 
-            // Kirim email ke user
             if ($reservation->user) {
                 Mail::to($reservation->user->email)
                     ->send(new ReservationRejectionNotification($reservation, $emailLabel));
             }
 
-            // Notifikasi in-app ke user
             if ($reservation->user_id) {
                 Notification::create([
                     'user_id' => $reservation->user_id,
@@ -446,13 +473,11 @@ class ReservationController extends Controller
                 $conflict->reason_canceled = $cancelReason;
                 $conflict->save();
 
-                // Kirim email ke user yang konflik
                 if ($conflict->user) {
                     Mail::to($conflict->user->email)
                         ->send(new ReservationRejectionNotification($conflict, 'Pembatalan'));
                 }
 
-                // Notifikasi in-app ke user yang konflik
                 if ($conflict->user_id) {
                     Notification::create([
                         'user_id' => $conflict->user_id,
@@ -482,13 +507,11 @@ class ReservationController extends Controller
             $reservation->status      = 'confirmed';
             $reservation->payment_url = $paymentUrl;
 
-            // Kirim email konfirmasi + link bayar ke user
             if ($reservation->user) {
                 Mail::to($reservation->user->email)
                     ->send(new VehicleAvailabilityNotification($reservation, $paymentUrl));
             }
 
-            // Notifikasi in-app ke user: reservasi dikonfirmasi
             if ($reservation->user_id) {
                 Notification::create([
                     'user_id' => $reservation->user_id,

@@ -23,7 +23,7 @@ class BookingHistoryController extends Controller
  
         // Canceled or failed reservations
         $canceledReservations = Reservation::where('user_id', $userId)
-            ->whereIn('status', ['canceled', 'failed'])
+            ->whereIn('status', ['canceled', 'failed', 'rejected'])
             ->with(['vehicle'])
             ->latest('updated_at')
             ->get();

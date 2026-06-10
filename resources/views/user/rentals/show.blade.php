@@ -113,3 +113,37 @@
         </tr>
     </tbody>
 </table>
+
+@php
+    $canExtend = \App\Models\RentalExtension::canExtend($rentals);
+    $latestExtension = \App\Models\RentalExtension::where('rental_id', $rentals->id)->latest()->first();
+@endphp
+
+@if($latestExtension)
+    <div class="card mt-3">
+        <div class="card-body">
+            <h6 class="mb-2">Permintaan Perpanjangan Terakhir</h6>
+            <p><strong>Status:</strong> <span class="badge
+                @switch($latestExtension->status)
+                    @case('pending') bg-warning text-dark @break
+                    @case('approved') bg-info @break
+                    @case('paid') bg-success @break
+                    @case('rejected') bg-danger @break
+                    @default bg-secondary
+                @endswitch
+            ">{{ ucfirst($latestExtension->status) }}</span></p>
+            <p><strong>Diminta sampai:</strong> {{ $latestExtension->extended_until?->format('d M Y, H:i') ?? '-' }}</p>
+            <p><strong>Biaya tambahan:</strong> Rp {{ number_format($latestExtension->additional_price,0,',','.') }}</p>
+            @if($latestExtension->status === 'approved')
+                <form action="{{ route('user.extensions.pay', $latestExtension->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-primary">Bayar Sekarang</button>
+                </form>
+            @endif
+        </div>
+    </div>
+@elseif($canExtend)
+    <div class="mt-3">
+        <a href="{{ route('user.extensions.create', $rentals->id) }}" class="btn btn-primary">Ajukan Perpanjangan</a>
+    </div>
+@endif

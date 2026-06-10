@@ -33,13 +33,12 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('layouts.admin.header', function ($view) {
             if (Auth::check()) {
-                $query = Notification::where('is_read', false)->latest()->take(15);
+                $notifications = Notification::where('user_id', Auth::id()) // ← selalu filter by user
+                    ->latest()
+                    ->take(15)
+                    ->get();
 
-                if (!Auth::user()->hasRole('admin')) {
-                    $query->where('user_id', Auth::id());
-                }
-
-                $view->with('notifications', $query->get());
+                $view->with('notifications', $notifications);
             } else {
                 $view->with('notifications', collect());
             }

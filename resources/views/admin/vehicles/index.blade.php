@@ -32,6 +32,7 @@
                                 <th class="text-center">Foto</th>
                                 <th class="text-center">Tipe Kendaraan</th>
                                 <th class="text-center">Nama</th>
+                                <th class="text-center">Unit Tersedia</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
@@ -53,6 +54,9 @@
                                     </td>
                                     <td>{{ $item->type == 'car' ? 'Mobil' : 'Motor' }}</td>
                                     <td>{{ $item->name }}</td>
+                                    <td>
+                                        <strong>{{ $item->current_available_count ?? $item->getAvailableCount() }}</strong>
+                                    </td>
                                     <td>
                                         @if ($item->status == 'available')
                                             <span class="badge bg-success">Tersedia</span>

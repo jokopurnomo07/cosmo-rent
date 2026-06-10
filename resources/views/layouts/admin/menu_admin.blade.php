@@ -53,6 +53,27 @@
             </li>
         </ul>
     </li>
+    <li class="sidebar-item {{ request()->is('admin/extensions*') ? 'active' : '' }} has-sub">
+        <a href="#" class='sidebar-link'>
+            <i class="bi bi-clock-history"></i>
+            <span>Perpanjangan</span>
+        </a>
+
+        <ul class="submenu">
+            <li class="submenu-item {{ (Route::is('admin.extensions.index') && request('status') == 'pending') ? 'active' : '' }}">
+                <a href="{{ route('admin.extensions.index', ['status' => 'pending']) }}" class="submenu-link">Menunggu</a>
+            </li>
+            <li class="submenu-item {{ (Route::is('admin.extensions.index') && request('status') == 'approved') ? 'active' : '' }}">
+                <a href="{{ route('admin.extensions.index', ['status' => 'approved']) }}" class="submenu-link">Disetujui</a>
+            </li>
+            <li class="submenu-item {{ (Route::is('admin.extensions.index') && request('status') == 'paid') ? 'active' : '' }}">
+                <a href="{{ route('admin.extensions.index', ['status' => 'paid']) }}" class="submenu-link">Terbayar</a>
+            </li>
+            <li class="submenu-item {{ (Route::is('admin.extensions.index') && request('status') == 'rejected') ? 'active' : '' }}">
+                <a href="{{ route('admin.extensions.index', ['status' => 'rejected']) }}" class="submenu-link">Ditolak</a>
+            </li>
+        </ul>
+    </li>
     <li class="sidebar-item {{ request()->is('admin/users*') ? 'active' : '' }}">
         <a href="{{ route('admin.users.index') }}" class='sidebar-link'>
             <i class="bi bi-person"></i>

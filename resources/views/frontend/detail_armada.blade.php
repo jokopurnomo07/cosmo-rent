@@ -29,16 +29,41 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-12">
+                    @php
+                        $hasImage = $vehicle->vehicle_images
+                            && Storage::disk('public')->exists($vehicle->vehicle_images);
+                        $imageUrl = $hasImage
+                            ? asset('storage/' . $vehicle->vehicle_images)
+                            : asset('frontend/images/placeholder-vehicle.jpg');
+
+                        $badgeConfig = match($vehicle->status) {
+                            'available'   => ['label' => 'Tersedia',           'color' => '#28a745'],
+                            'rented'      => ['label' => 'Sedang Disewa',      'color' => '#dc3545'],
+                            'maintenance' => ['label' => 'Sedang Maintenance', 'color' => '#fd7e14'],
+                            default       => ['label' => 'Tidak Tersedia',     'color' => '#6c757d'],
+                        };
+                    @endphp
                     <div class="car-details">
-                        @php
-                            $hasImage = $vehicle->vehicle_images
-                                && Storage::disk('public')->exists($vehicle->vehicle_images);
-                            $imageUrl = $hasImage
-                                ? asset('storage/' . $vehicle->vehicle_images)
-                                : asset('frontend/images/placeholder-vehicle.jpg');
-                        @endphp
-                        <div class="img rounded"
-                             style="background-image: url('{{ $imageUrl }}');"></div>
+                        <div style="position: relative;">
+                            <div class="img rounded"
+                                 style="background-image: url('{{ $imageUrl }}');"></div>
+                            {{-- Badge availability di atas gambar detail --}}
+                            <span style="
+                                position: absolute;
+                                top: 16px;
+                                left: 16px;
+                                background-color: {{ $badgeConfig['color'] }};
+                                color: #fff;
+                                font-size: 13px;
+                                font-weight: 600;
+                                padding: 5px 16px;
+                                border-radius: 20px;
+                                letter-spacing: 0.5px;
+                                box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+                            ">
+                                {{ $badgeConfig['label'] }}
+                            </span>
+                        </div>
                         <div class="text text-center">
                             <span class="subheading">{{ $vehicle->brand }}</span>
                             <h2>{{ $vehicle->name }}</h2>
@@ -183,10 +208,17 @@
                             <tbody>
                                 <tr>
                                     <td class="price">
+                                        {{-- Tombol pesan hanya aktif jika available --}}
                                         <p class="btn-custom">
-                                            <a href="{{ route('reservations.create', ['id' => $vehicle->id]) }}">
-                                                Pesan Sekarang
-                                            </a>
+                                            @if ($vehicle->status === 'available')
+                                                <a href="{{ route('reservations.create', ['id' => $vehicle->id]) }}">
+                                                    Pesan Sekarang
+                                                </a>
+                                            @else
+                                                <span style="color: #6c757d; cursor: not-allowed;">
+                                                    {{ $badgeConfig['label'] }}
+                                                </span>
+                                            @endif
                                         </p>
                                         <div class="price-rate">
                                             <h3>
@@ -197,9 +229,15 @@
                                     </td>
                                     <td class="price">
                                         <p class="btn-custom">
-                                            <a href="{{ route('reservations.create', ['id' => $vehicle->id]) }}">
-                                                Pesan Sekarang
-                                            </a>
+                                            @if ($vehicle->status === 'available')
+                                                <a href="{{ route('reservations.create', ['id' => $vehicle->id]) }}">
+                                                    Pesan Sekarang
+                                                </a>
+                                            @else
+                                                <span style="color: #6c757d; cursor: not-allowed;">
+                                                    {{ $badgeConfig['label'] }}
+                                                </span>
+                                            @endif
                                         </p>
                                         <div class="price-rate">
                                             <h3>
@@ -210,9 +248,15 @@
                                     </td>
                                     <td class="price">
                                         <p class="btn-custom">
-                                            <a href="{{ route('reservations.create', ['id' => $vehicle->id]) }}">
-                                                Pesan Sekarang
-                                            </a>
+                                            @if ($vehicle->status === 'available')
+                                                <a href="{{ route('reservations.create', ['id' => $vehicle->id]) }}">
+                                                    Pesan Sekarang
+                                                </a>
+                                            @else
+                                                <span style="color: #6c757d; cursor: not-allowed;">
+                                                    {{ $badgeConfig['label'] }}
+                                                </span>
+                                            @endif
                                         </p>
                                         <div class="price-rate">
                                             <h3>
@@ -248,11 +292,33 @@
                             $recImageUrl = $recHasImage
                                 ? asset('storage/' . $item->vehicle_images)
                                 : asset('frontend/images/placeholder-vehicle.jpg');
+
+                            $recBadge = match($item->status) {
+                                'available'   => ['label' => 'Tersedia',           'color' => '#28a745'],
+                                'rented'      => ['label' => 'Sedang Disewa',      'color' => '#dc3545'],
+                                'maintenance' => ['label' => 'Sedang Maintenance', 'color' => '#fd7e14'],
+                                default       => ['label' => 'Tidak Tersedia',     'color' => '#6c757d'],
+                            };
                         @endphp
                         <div class="col-md-4">
                             <div class="car-wrap rounded ftco-animate">
                                 <div class="img rounded d-flex align-items-end"
-                                     style="background-image: url('{{ $recImageUrl }}');">
+                                     style="background-image: url('{{ $recImageUrl }}'); position: relative;">
+                                    <span style="
+                                        position: absolute;
+                                        top: 12px;
+                                        left: 12px;
+                                        background-color: {{ $recBadge['color'] }};
+                                        color: #fff;
+                                        font-size: 11px;
+                                        font-weight: 600;
+                                        padding: 3px 10px;
+                                        border-radius: 20px;
+                                        letter-spacing: 0.5px;
+                                        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+                                    ">
+                                        {{ $recBadge['label'] }}
+                                    </span>
                                 </div>
                                 <div class="text">
                                     <h2 class="mb-0">
@@ -268,8 +334,12 @@
                                         </p>
                                     </div>
                                     <p class="d-flex mb-0 d-block">
-                                        <a href="{{ route('reservations.create', ['id' => $item->id]) }}"
-                                           class="btn btn-primary py-2 mr-1">Pesan</a>
+                                        @if ($item->status === 'available')
+                                            <a href="{{ route('reservations.create', ['id' => $item->id]) }}"
+                                               class="btn btn-primary py-2 mr-1">Pesan</a>
+                                        @else
+                                            <button class="btn btn-secondary py-2 mr-1" disabled>Pesan</button>
+                                        @endif
                                         <a href="{{ route('vehicles.show', ['id' => $item->id]) }}"
                                            class="btn btn-secondary py-2 ml-1">Detail</a>
                                     </p>

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Frontend;
 use App\Models\Rental;
 use App\Models\Reservation;
 use App\Models\RentalService;
+use App\Models\RentalExtension;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
@@ -41,6 +43,31 @@ class PaymentController extends Controller
                 ->with('error', 'Data pembayaran tidak valid.');
         }
 
+        // Fallback: if this is an extension order and Midtrans didn't send webhook,
+        // process the success here based on redirect params (best-effort).
+        try {
+            if (strpos($orderId, 'EXT-') === 0) {
+                $extensionId = explode('-', $orderId)[1] ?? null;
+                $extension = \App\Models\RentalExtension::with('rental')->find($extensionId);
+
+                if ($extension) {
+                    if (in_array($transactionStatus, ['capture', 'settlement'])) {
+                        $this->handleExtensionSuccess($extension);
+
+                        return redirect()->route('user.rentals.index')
+                            ->with('success', 'Pembayaran perpanjangan berhasil dan masa sewa diperpanjang.');
+                    }
+
+                    if ($transactionStatus === 'pending') {
+                        return redirect()->route('user.rentals.index')
+                            ->with('info', 'Pembayaran perpanjangan sedang diproses.');
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('Fallback extension finish processing failed: ' . $e->getMessage());
+        }
+
         $reservation = Reservation::where('trx_id', $orderId)
             ->where('user_id', auth()->id())
             ->with(['vehicle', 'services'])
@@ -66,7 +93,7 @@ class PaymentController extends Controller
         }
 
         // deny, expire, cancel
-        if ($reservation->status !== 'failed' && $reservation->status !== 'expired') {
+        if (!in_array($reservation->status, ['failed', 'expired'])) {
             $this->handleFailure($reservation);
         }
 
@@ -84,20 +111,38 @@ class PaymentController extends Controller
             $orderId           = $notification->order_id;
             $transactionStatus = $notification->transaction_status;
 
-            $reservation = Reservation::where('trx_id', $orderId)
-                ->with(['user:id,name,email,phone,address', 'services', 'vehicle'])
-                ->first();
+            // Check if this is an extension payment (order_id starts with 'EXT-')
+            if (strpos($orderId, 'EXT-') === 0) {
+                $extensionId = explode('-', $orderId)[1];
+                $extension = RentalExtension::find($extensionId);
 
-            if (!$reservation) {
-                return response()->json(['error' => 'Reservation not found'], 404);
+                if (!$extension) {
+                    return response()->json(['error' => 'Extension not found'], 404);
+                }
+
+                match ($transactionStatus) {
+                    'capture', 'settlement'    => $this->handleExtensionSuccess($extension),
+                    'pending'                  => $this->handleExtensionPending($extension),
+                    'deny', 'expire', 'cancel' => $this->handleExtensionFailure($extension),
+                    default                    => Log::info('Unhandled extension transaction status: ' . $transactionStatus),
+                };
+            } else {
+                // Regular reservation payment
+                $reservation = Reservation::where('trx_id', $orderId)
+                    ->with(['user:id,name,email,phone,address', 'services', 'vehicle'])
+                    ->first();
+
+                if (!$reservation) {
+                    return response()->json(['error' => 'Reservation not found'], 404);
+                }
+
+                match ($transactionStatus) {
+                    'capture', 'settlement'    => $this->handleSuccess($reservation),
+                    'pending'                  => $this->handlePending($reservation),
+                    'deny', 'expire', 'cancel' => $this->handleFailure($reservation),
+                    default                    => Log::info('Unhandled transaction status: ' . $transactionStatus),
+                };
             }
-
-            match ($transactionStatus) {
-                'capture', 'settlement'    => $this->handleSuccess($reservation),
-                'pending'                  => $this->handlePending($reservation),
-                'deny', 'expire', 'cancel' => $this->handleFailure($reservation),
-                default                    => Log::info('Unhandled transaction status: ' . $transactionStatus),
-            };
 
             return response()->json(['status' => 'ok']);
 
@@ -109,11 +154,21 @@ class PaymentController extends Controller
 
     protected function handleSuccess(Reservation $reservation): void
     {
+        // Guard idempoten — Midtrans bisa kirim notifikasi duplikat
         if ($reservation->status === 'paid') {
             return;
         }
 
         $reservation->update(['status' => 'paid']);
+
+        // Lock kendaraan segera setelah pembayaran settlement.
+        // Ini mencegah kendaraan yang sudah dibayar muncul sebagai
+        // available di form pemesanan baru sebelum admin set 'ongoing'.
+        // Admin set 'ongoing' tetap ada tapi fungsinya konfirmasi fisik
+        // (kendaraan diserahkan), bukan untuk block availability.
+        if ($reservation->vehicle && $reservation->vehicle->status === 'available') {
+            $reservation->vehicle->update(['status' => 'rented']);
+        }
 
         $rental = Rental::updateOrCreate(
             ['trx_id' => $reservation->trx_id],
@@ -133,7 +188,7 @@ class PaymentController extends Controller
             ]
         );
 
-        if ($reservation->vehicle->type === 'car' && $reservation->services->isNotEmpty()) {
+        if ($reservation->vehicle && $reservation->vehicle->type === 'car' && $reservation->services->isNotEmpty()) {
             foreach ($reservation->services as $service) {
                 RentalService::updateOrCreate([
                     'rental_id'  => $rental->id,
@@ -142,26 +197,139 @@ class PaymentController extends Controller
             }
         }
 
-        Log::info('Payment success, rental created/updated: ' . $reservation->trx_id);
+        Log::info('Payment success, rental created/updated, vehicle locked: ' . $reservation->trx_id);
     }
 
     protected function handleFailure(Reservation $reservation): void
     {
+        // Guard idempoten
         if (in_array($reservation->status, ['failed', 'expired'])) {
             return;
         }
 
         $reservation->update(['status' => 'expired']);
 
+        // Bebaskan kendaraan jika sebelumnya sudah ter-lock
+        // (kasus: payment sempat pending lalu expire)
+        if ($reservation->vehicle && $reservation->vehicle->status === 'rented') {
+            // Cek dulu apakah ada rental/reservation lain yang masih aktif
+            // untuk kendaraan yang sama sebelum dibebaskan
+            $otherActivePaid = Reservation::where('vehicle_id', $reservation->vehicle_id)
+                ->where('id', '!=', $reservation->id)
+                ->whereIn('status', ['paid', 'confirmed'])
+                ->exists();
+
+            if (!$otherActivePaid) {
+                $reservation->vehicle->update(['status' => 'available']);
+            }
+        }
+
         Rental::where('trx_id', $reservation->trx_id)
             ->update(['status' => 'payment_failed']);
 
-        Log::info('Payment failed: ' . $reservation->trx_id);
+        Log::info('Payment failed, reservation expired: ' . $reservation->trx_id);
     }
 
     protected function handlePending(Reservation $reservation): void
     {
         $reservation->update(['status' => 'pending']);
         Log::info('Payment pending: ' . $reservation->trx_id);
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // EXTENSION PAYMENT HANDLERS
+    // ─────────────────────────────────────────────────────────────────
+    protected function handleExtensionSuccess(RentalExtension $extension): void
+    {
+        // Guard idempoten
+        if ($extension->status === 'paid') {
+            return;
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $rental = $extension->rental;
+
+            // Update extension status
+            $extension->status = 'paid';
+            $extension->save();
+
+            // Update rental end_date
+            $rental->end_date = $extension->extended_until;
+            $rental->save();
+
+            DB::commit();
+
+            // Notify user about successful extension payment
+            try {
+                if ($rental->user_id) {
+                    \App\Models\Notification::create([
+                        'user_id' => $rental->user_id,
+                        'type' => 'extension_paid',
+                        'data' => [
+                            'title' => 'Perpanjangan Dibayar',
+                            'message' => "Perpanjangan untuk {$rental->vehicle->name} telah berhasil dibayar.",
+                            'extension_id' => $extension->id,
+                            'rental_id' => $rental->id,
+                        ],
+                        'is_read' => false,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to create extension paid notification: ' . $e->getMessage());
+            }
+
+            Log::info('Extension payment success: ' . $extension->id . ', new end_date: ' . $extension->extended_until);
+
+            // Broadcast extension paid so header updates in realtime
+            try {
+                event(new \App\Events\ExtensionPaid($extension));
+            } catch (\Throwable $e) {
+                Log::warning('Failed to broadcast ExtensionPaid: ' . $e->getMessage());
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Extension payment success handler failed: ' . $e->getMessage());
+        }
+    }
+
+    protected function handleExtensionFailure(RentalExtension $extension): void
+    {
+        // Guard idempoten
+        if (in_array($extension->status, ['rejected', 'canceled'])) {
+            return;
+        }
+
+        $extension->status = 'canceled';
+        $extension->reason_rejected = 'Pembayaran dibatalkan atau expired';
+        $extension->save();
+
+        // Notify user
+        try {
+            if ($extension->rental && $extension->rental->user_id) {
+                \App\Models\Notification::create([
+                    'user_id' => $extension->rental->user_id,
+                    'type' => 'extension_failed',
+                    'data' => [
+                        'title' => 'Perpanjangan Gagal',
+                        'message' => "Pembayaran perpanjangan untuk {$extension->rental->vehicle->name} gagal atau dibatalkan.",
+                        'extension_id' => $extension->id,
+                        'rental_id' => $extension->rental->id,
+                    ],
+                    'is_read' => false,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to create extension failed notification: ' . $e->getMessage());
+        }
+
+        Log::info('Extension payment failed: ' . $extension->id);
+    }
+
+    protected function handleExtensionPending(RentalExtension $extension): void
+    {
+        // Keep status as 'approved' (waiting for payment settlement)
+        Log::info('Extension payment pending: ' . $extension->id);
     }
 }

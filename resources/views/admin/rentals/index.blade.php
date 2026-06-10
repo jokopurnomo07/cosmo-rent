@@ -80,10 +80,25 @@
                                             <span class="badge bg-success">Selesai</span>
                                         @endif
                                     </td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-outline-primary" onclick="detail({{ $item->id }})">
-                                            <i class="bi bi-info-circle-fill"></i>
-                                        </button>
+                                     <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-primary" onclick="detail({{ $item->id }})">
+                                                <i class="bi bi-info-circle-fill"></i>
+                                            </button>
+                                            @php
+                                                $canShowTrackingButton = in_array($item->status, ['ongoing'])
+                                                    && ($item->vehicle && $item->vehicle->status === 'rented')
+                                                    || (
+                                                        $item->start_date && $item->end_date
+                                                        && now()->between($item->start_date, $item->end_date)
+                                                    );
+                                            @endphp
+                                            @if($canShowTrackingButton)
+                                                <button type="button" class="btn btn-outline-success" onclick="getTracking({{ $item->id }})" title="Lacak">
+                                                    <i class="bi bi-geo-fill"></i>
+                                                </button>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -201,6 +216,68 @@
                     });
                 }
             });
+        }
+    </script>
+    <style>
+        /* small map in modal */
+        #trackingMap { height: 320px; width: 100%; }
+        .leaflet-div-icon.car-icon { background: transparent; border: none; }
+        .leaflet-div-icon.car-icon div { transform: translateY(-2px); font-size:28px; }
+    </style>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <script>
+        async function getTracking(rentalId) {
+            try {
+                const res = await fetch(`/admin/tracking/${rentalId}/current-location`);
+                const json = await res.json();
+
+                if (!json.success) {
+                    Swal.fire({ icon: 'info', title: 'Info', text: json.message || 'Lokasi belum tersedia.'});
+                    return;
+                }
+
+                const data = json.data;
+
+                // populate modal
+                $('#detailModalTitle').text('Tracking - ' + (data.rental_id || rentalId));
+                const html = `
+                    <div>
+                        <p><strong>Latitude:</strong> ${data.latitude} &nbsp; <strong>Longitude:</strong> ${data.longitude}</p>
+                        <p><strong>Alamat:</strong> ${data.address || '-'} &nbsp; <strong>Speed:</strong> ${data.speed || 0} km/h</p>
+                        <div id="trackingMap"></div>
+                    </div>`;
+
+                $('#contentModal').html(html);
+                $('#detailModal').modal('show');
+
+                // init leaflet map with car icon
+                setTimeout(() => {
+                    try {
+                        const lat = parseFloat(data.latitude);
+                        const lng = parseFloat(data.longitude);
+                        const map = L.map('trackingMap').setView([lat, lng], 14);
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+                        const carIcon = L.divIcon({
+                            html: '<div style="font-size:28px; line-height:28px;">🚗</div>',
+                            className: 'leaflet-div-icon car-icon',
+                            iconSize: [28, 28],
+                            iconAnchor: [14, 14]
+                        });
+
+                        L.marker([lat, lng], { icon: carIcon }).addTo(map).bindPopup('Posisi terakhir').openPopup();
+                    } catch (e) {
+                        console.error('Map init error', e);
+                    }
+                }, 300);
+
+            } catch (e) {
+                console.error(e);
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal mengambil lokasi.'});
+            }
         }
     </script>
 @endpush

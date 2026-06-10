@@ -15,6 +15,12 @@ class Rental extends Model
     protected static $logAttributes = ['user_id', 'vehicle_id', 'package_id', 'start_date', 'end_date', 'total_price', 'down_payment_amount', 'status'];
     protected static $logName = 'rental';
     protected $guarded = [];
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function user()
     {
@@ -34,6 +40,16 @@ class Rental extends Model
     public function services()
     {
         return $this->belongsToMany(Service::class, 'rental_services');
+    }
+
+    public function extensions()
+    {
+        return $this->hasMany(RentalExtension::class, 'rental_id');
+    }
+
+    public function locationLogs()
+    {
+        return $this->hasMany(RentalLocationLog::class, 'rental_id');
     }
 
     public function tapActivity(Activity $activity, string $eventName)

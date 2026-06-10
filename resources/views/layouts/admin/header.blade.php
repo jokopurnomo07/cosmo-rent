@@ -50,15 +50,10 @@
                                             </div>
                                             <div class="notification-text">
                                                 <p class="mb-0 fw-semibold" style="font-size: 0.85rem;">
-                                                    @switch($notification->type)
-                                                        @case('new_reservation') Reservasi Baru @break
-                                                        @case('reservation_confirmed') Reservasi Dikonfirmasi @break
-                                                        @case('reservation_paid') Pembayaran Diterima @break
-                                                        @default Notifikasi
-                                                    @endswitch
+                                                    {{ $notification->resolvedTitle }}
                                                 </p>
                                                 <p class="mb-0 text-muted" style="font-size: 0.78rem;">
-                                                    Trx: {{ $notification->data['trx_id'] ?? '-' }}
+                                                    {{ $notification->resolvedMessage }}
                                                 </p>
                                                 <p class="mb-0 text-muted" style="font-size: 0.75rem;">
                                                     {{ $notification->created_at->diffForHumans() }}
@@ -130,32 +125,44 @@
 @push('scripts')
 <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 <script>
-    // Pusher — hanya aktif untuk admin
-    @can('isAdmin')
+    // Pusher — aktif untuk semua pengguna terautentikasi agar notifikasi realtime tersedia
+    @auth
     Pusher.logToConsole = false;
 
     var pusher = new Pusher('f98b3d4b520dc87e2e8c', { cluster: 'ap1' });
-    var channel = pusher.subscribe('reservations');
+    var reservationsChannel = pusher.subscribe('reservations');
+    var extensionsChannel = pusher.subscribe('extensions');
 
-    channel.bind('reservation.created', function (data) {
+    reservationsChannel.bind('reservation.created', function (data) {
         addNotificationToList(data.reservation);
     });
 
-    function addNotificationToList(reservation) {
+    // New extension requested (for admins)
+    extensionsChannel.bind('extension.requested', function (data) {
+        addExtensionNotificationToList(data.extension);
+    });
+
+    // Extension approved (for user)
+        // Extension paid (for user)
+        extensionsChannel.bind('extension.paid', function (data) {
+            addPaidExtensionNotificationToList(data.extension);
+        });
+
+    function addExtensionNotificationToList(extension) {
         $('#empty-notification').remove();
 
         var html = `
-            <li class="notification-item unread" data-id="${reservation.id}" style="cursor: pointer;">
+            <li class="notification-item unread" data-id="ext-${extension.id}" style="cursor: pointer;">
                 <a class="dropdown-item d-flex align-items-start py-2 px-3 bg-light"
                    href="#"
-                   onclick="markAsRead(event, ${reservation.id})">
+                   onclick="$('#mark-all-as-read').trigger('click')">
                     <div class="notification-icon bg-primary rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0"
                          style="width: 36px; height: 36px;">
-                        <i class="bi bi-calendar-check text-white"></i>
+                        <i class="bi bi-arrow-clockwise text-white"></i>
                     </div>
                     <div class="notification-text">
-                        <p class="mb-0 fw-semibold" style="font-size: 0.85rem;">Reservasi Baru</p>
-                        <p class="mb-0 text-muted" style="font-size: 0.78rem;">Trx: ${reservation.trx_id}</p>
+                        <p class="mb-0 fw-semibold" style="font-size: 0.85rem;">Permintaan Perpanjangan</p>
+                        <p class="mb-0 text-muted" style="font-size: 0.78rem;">${extension.vehicle_name || ''}</p>
                         <p class="mb-0 text-muted" style="font-size: 0.75rem;">Baru saja</p>
                     </div>
                     <span class="ms-auto ps-2">
@@ -168,7 +175,35 @@
         $('#notification-list').prepend(html);
         updateBadgeCount(1);
     }
-    @endcan
+
+        function addPaidExtensionNotificationToList(extension) {
+            $('#empty-notification').remove();
+
+            var html = `
+                <li class="notification-item unread" data-id="ext-paid-${extension.id}" style="cursor: pointer;">
+                    <a class="dropdown-item d-flex align-items-start py-2 px-3 bg-light"
+                       href="#"
+                       onclick="$('#mark-all-as-read').trigger('click')">
+                        <div class="notification-icon bg-success rounded-circle d-flex align-items-center justify-content-center me-3 flex-shrink-0"
+                             style="width: 36px; height: 36px;">
+                            <i class="bi bi-check2-all text-white"></i>
+                        </div>
+                        <div class="notification-text">
+                            <p class="mb-0 fw-semibold" style="font-size: 0.85rem;">Perpanjangan Dibayar</p>
+                            <p class="mb-0 text-muted" style="font-size: 0.78rem;">${extension.vehicle_name || ''}</p>
+                            <p class="mb-0 text-muted" style="font-size: 0.75rem;">Baru saja</p>
+                        </div>
+                        <span class="ms-auto ps-2">
+                            <span class="badge bg-success rounded-pill" style="font-size: 0.6rem;">Baru</span>
+                        </span>
+                    </a>
+                </li>
+            `;
+
+            $('#notification-list').prepend(html);
+            updateBadgeCount(1);
+        }
+    @endauth
 
     function markAsRead(event, notificationId) {
         event.preventDefault();

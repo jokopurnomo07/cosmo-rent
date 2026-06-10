@@ -33,6 +33,43 @@ class Vehicle extends Model
         return $this->hasOne(VehiclePrice::class);
     }
 
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class, 'vehicle_id');
+    }
+
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class, 'vehicle_id');
+    }
+
+    /**
+     * Calculate current available units
+     * Available = stock_quantity - active_rentals - confirmed_reservations
+     */
+    public function getAvailableCount()
+    {
+        $activeRentals = $this->rentals()
+            ->whereIn('status', ['paid', 'ongoing'])
+            ->count();
+
+        $confirmedReservations = $this->reservations()
+            ->whereIn('status', ['confirmed', 'paid'])
+            ->count();
+
+        $available = max(0, $this->stock_quantity - $activeRentals - $confirmedReservations);
+        
+        return $available;
+    }
+
+    /**
+     * Update current available count in database
+     */
+    public function updateAvailableCount()
+    {
+        $this->current_available_count = $this->getAvailableCount();
+        $this->save();
+    }
 
     public function tapActivity(Activity $activity, string $eventName)
     {

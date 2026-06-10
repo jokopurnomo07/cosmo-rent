@@ -10,6 +10,7 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
+use App\Models\RentalExtension;
 
 
 class DashboardController extends Controller
@@ -43,12 +44,14 @@ class DashboardController extends Controller
             ->where('status', 'confirmed')
             ->count();
 
-        // Penyewaan sedang aktif
-        $activeRental = Rental::where('user_id', $userId)
+        // Penyewaan sedang aktif (ambil semua, user bisa punya >1)
+        $activeRentals = Rental::where('user_id', $userId)
             ->whereIn('status', ['ongoing', 'paid', 'awaiting_confirmation'])
             ->with('vehicle')
             ->latest()
-            ->first();
+            ->get();
+
+        $activeCount = $activeRentals->count();
 
         // 5 riwayat sewa terbaru
         $recentRentals = Rental::where('user_id', $userId)
@@ -63,12 +66,29 @@ class DashboardController extends Controller
             ->latest()
             ->paginate(10);
 
+        // Extension stats for user
+        $extensionCounts = [
+            'pending'  => RentalExtension::whereHas('rental', fn($q) => $q->where('user_id', $userId))->where('status', 'pending')->count(),
+            'approved' => RentalExtension::whereHas('rental', fn($q) => $q->where('user_id', $userId))->where('status', 'approved')->count(),
+            'paid'     => RentalExtension::whereHas('rental', fn($q) => $q->where('user_id', $userId))->where('status', 'paid')->count(),
+        ];
+
+        $pendingExtensions = RentalExtension::with('rental.vehicle')
+            ->whereHas('rental', fn($q) => $q->where('user_id', $userId))
+            ->where('status', 'pending')
+            ->latest()
+            ->take(5)
+            ->get();
+
         return view('user.dashboard', [
             'totalRent'        => $totalRent,
             'totalReservation' => $totalReservation,
-            'activeRental'     => $activeRental,
+            'activeRentals'    => $activeRentals,
+            'activeCount'      => $activeCount,
             'recentRentals'    => $recentRentals,
             'notifications'    => $notifications,
+            'extensionCounts'  => $extensionCounts,
+            'pendingExtensions'=> $pendingExtensions,
         ]);
     }
 }

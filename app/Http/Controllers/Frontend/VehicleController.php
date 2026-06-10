@@ -9,19 +9,31 @@ use App\Http\Controllers\Controller;
 
 class VehicleController extends Controller
 {
-    public function index(){
-        $vehicles = Vehicle::with(['features','prices'])->paginate(6);
-        return view('frontend.our_armada', ['vehicles' => $vehicles]);
+    public function index()
+    {
+        $vehicles = Vehicle::with(['features', 'prices'])->paginate(6);
+
+        return view('frontend.our_armada', [
+            'vehicles' => $vehicles,
+        ]);
     }
 
-    public function show($id){
-        
-        $vehicle = Vehicle::with(['features','prices'])->findOrFail($id);
-        $recommendationVehicle = Vehicle::with(['features','prices'])->inRandomOrder()->limit(3)->get();
+    public function show($id)
+    {
+        $vehicle = Vehicle::with(['features', 'prices'])->findOrFail($id);
+
+        // Ambil 3 rekomendasi kendaraan lain, exclude kendaraan yang sedang dilihat
+        $recommendationVehicle = Vehicle::with(['features', 'prices'])
+            ->where('id', '!=', $id)
+            ->inRandomOrder()
+            ->limit(3)
+            ->get();
+
         $features = Feature::whereIn('type', ['both', $vehicle->type])->get()->toArray();
+
         return view('frontend.detail_armada', [
-            'vehicle' => $vehicle,
-            'features' => $features,
+            'vehicle'        => $vehicle,
+            'features'       => $features,
             'recommendation' => $recommendationVehicle,
         ]);
     }

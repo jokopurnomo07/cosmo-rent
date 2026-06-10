@@ -34,6 +34,7 @@ class ReservationCreated implements ShouldBroadcast
                 'type'       => 'reservation.created',
                 'data'       => json_encode([
                     'reservation_id' => $reservation->id,
+                    'title' => 'Reservasi Baru',
                     'trx_id'         => $reservation->trx_id,
                     'message'        => 'New reservation created.',
                     'created_at'     => $reservation->created_at->toDateTimeString(),

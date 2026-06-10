@@ -14,6 +14,8 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('notify:pickup')->daily();
+        // Cancel extension payments that exceeded payment_due_at (run hourly)
+        $schedule->command('extensions:cancel-expired')->hourly();
         
     }
 

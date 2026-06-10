@@ -65,6 +65,32 @@
                                             <button type="button" class="btn btn-outline-primary" onclick="detail({{ $item->id }})">
                                                 <i class="bi bi-info-circle-fill"></i>
                                             </button>
+                                                @php
+                                                    $rentalModel = \App\Models\Rental::find($item->id);
+                                                    $latestExt = \App\Models\RentalExtension::where('rental_id', $item->id)->latest()->first();
+                                                    $canExtendRow = $rentalModel ? \App\Models\RentalExtension::canExtend($rentalModel) : false;
+                                                @endphp
+                                                @if($item->status !== 'returned')
+                                                    @if($latestExt)
+                                                        <span class="badge
+                                                            @switch($latestExt->status)
+                                                                @case('pending') bg-warning text-dark @break
+                                                                @case('approved') bg-info @break
+                                                                @case('paid') bg-success @break
+                                                                @case('rejected') bg-danger @break
+                                                                @default bg-secondary
+                                                            @endswitch
+                                                            ms-2">{{ ucfirst($latestExt->status) }}</span>
+
+                                                        @if($latestExt->status === 'approved')
+                                                            <a href="{{ route('user.extensions.pay', $latestExt->id) }}" class="btn btn-sm btn-primary ms-2">Bayar</a>
+                                                        @endif
+                                                    @elseif($canExtendRow)
+                                                        <a href="{{ route('user.extensions.create', $item->id) }}" class="btn btn-outline-success">
+                                                            <i class="bi bi-arrow-clockwise"></i> Perpanjang
+                                                        </a>
+                                                    @endif
+                                                @endif
                                         </td>
                                     </tr>
                                 @endforeach
