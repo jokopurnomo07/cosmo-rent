@@ -1,106 +1,191 @@
 # 🚗 Cosmo-Rent — Vehicle Rental Management System
 
-A web-based vehicle rental management system built with Laravel, featuring reservation management, online payment via Midtrans, and role-based access for admin and users.
+Sistem manajemen rental kendaraan berbasis web, dibangun dengan Laravel 10. Mendukung alur reservasi lengkap, pembayaran online via Midtrans Snap, perpanjangan rental, pelacakan lokasi kendaraan real-time, notifikasi in-app, dan role-based access untuk Admin dan User.
+
+> 📌 Proyek ini dikembangkan sebagai Tugas Akhir (Skripsi) dan dideploy di [Railway](https://railway.app).
 
 ---
 
-## 📋 Table of Contents
+## 📋 Daftar Isi
 
-- [Requirements](#requirements)
 - [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Local Installation](#local-installation)
-- [Environment Configuration](#environment-configuration)
-- [Database Setup](#database-setup)
-- [Running the Application](#running-the-application)
-- [Default Accounts](#default-accounts)
-- [Payment Testing (Midtrans Sandbox)](#payment-testing-midtrans-sandbox)
-- [Deployment to Railway](#deployment-to-railway)
-- [Project Structure](#project-structure)
-
----
-
-## Requirements
-
-Before you begin, make sure you have the following installed:
-
-- PHP >= 8.3
-- Composer
-- Node.js >= 20.x & NPM
-- PostgreSQL >= 14
-- Git
-- [Laragon](https://laragon.org/) (recommended for Windows) or Laravel Herd / XAMPP
+- [Fitur](#fitur)
+- [Alur Sistem](#alur-sistem)
+- [Skema Database](#skema-database)
+- [Instalasi Lokal](#instalasi-lokal)
+- [Konfigurasi Environment](#konfigurasi-environment)
+- [Setup Database](#setup-database)
+- [Menjalankan Aplikasi](#menjalankan-aplikasi)
+- [Scheduled Tasks](#scheduled-tasks)
+- [Akun Default](#akun-default)
+- [Testing Pembayaran Midtrans](#testing-pembayaran-midtrans)
+- [Deployment ke Railway](#deployment-ke-railway)
+- [Struktur Proyek](#struktur-proyek)
+- [Catatan Keamanan](#catatan-keamanan)
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
+| Layer | Teknologi |
 |---|---|
-| Backend | Laravel 10 |
+| Backend | Laravel 10, PHP 8.3 |
 | Frontend | Blade, Tailwind CSS, Vite |
-| Database | PostgreSQL |
-| Payment | Midtrans Snap |
-| Authentication | Laravel Breeze |
-| Mail | SMTP / Mailpit (local) |
+| Database | PostgreSQL 14+ |
+| Payment | Midtrans Snap (`midtrans/midtrans-php ^2.5`) |
+| Authentication | Laravel Breeze + Spatie Permission (`^6.13`) |
+| Realtime | Pusher (`pusher/pusher-php-server ^7.2`) |
+| Export | Maatwebsite Excel (`^3.1`) |
+| Activity Log | Spatie Laravel Activitylog (`^4.8`) |
+| Media | Spatie Media Library (`^10.15`) |
+| DataTable | Yajra Laravel Datatables (`10.0`) |
+| HTTP Client | Guzzle (`^7.2`) |
+| Mail | SMTP / Mailpit (lokal) |
+| Deployment | Railway + Nixpacks |
 
 ---
 
-## Features
+## Fitur
 
 ### Admin
-- Dashboard with reservation & rental overview
-- Manage vehicles (CRUD)
-- Manage reservations — confirm, reject, cancel
-- Manage rentals — update status
-- Manage users
-- Export rental reports
+- Dashboard overview reservasi & rental aktif
+- CRUD kendaraan (tipe, merek, transmisi, bahan bakar, kapasitas, gambar, stok)
+- Manajemen reservasi — konfirmasi, tolak, batalkan, generate Midtrans payment URL
+- Manajemen rental — update status (paid → ongoing → returned)
+- Approve/reject perpanjangan rental
+- Tracking lokasi kendaraan real-time (via GPS device atau webhook)
+- Export laporan rental ke Excel dengan filter rentang tanggal mulai rental
+- Manajemen user
 
 ### User
-- Browse available vehicles
-- Create reservations
-- Online payment via Midtrans
-- View reservation & rental history
-- Cancel reservations
+- Browse kendaraan yang tersedia
+- Buat reservasi dengan pilihan paket durasi & layanan tambahan (khusus tipe mobil)
+- Pembayaran online via Midtrans Snap
+- Ajukan perpanjangan rental (maks. 1x per rental, status ongoing/paid)
+- Bayar biaya perpanjangan via Midtrans
+- Lihat histori reservasi & rental
+- Batalkan reservasi sendiri
+- Notifikasi in-app untuk setiap perubahan status
 
 ---
 
-## Local Installation
+## Alur Sistem
 
-### 1. Clone the repository
+### Reservasi → Rental
+
+```
+[User] Buat Reservasi
+    → status: pending
+    → [Admin] Konfirmasi
+    → status: confirmed + Midtrans payment URL dibuat + email dikirim ke user
+    → [User] Klik link & bayar
+    → Webhook Midtrans settlement
+    → status: paid + Rental dibuat otomatis + kendaraan dikunci (status: rented)
+    → [Admin] Update Rental: paid → ongoing → returned
+```
+
+### Perpanjangan Rental
+
+```
+[User] Ajukan Perpanjangan (saat rental ongoing/paid)
+    → Extension status: pending
+    → [Admin] Approve
+    → status: approved + Midtrans payment URL dibuat + email dikirim ke user
+    → [User] Bayar perpanjangan
+    → Webhook settlement → status: paid + end_date rental diperbarui
+```
+
+### Status Reservasi
+
+| Status | Keterangan | Diset Oleh |
+|---|---|---|
+| `pending` | Menunggu konfirmasi admin | Default saat dibuat |
+| `confirmed` | Dikonfirmasi, menunggu pembayaran | Admin |
+| `paid` | Pembayaran berhasil, Rental sudah dibuat | Webhook Midtrans |
+| `expired` | Pembayaran gagal/expired/dibatalkan | Webhook Midtrans |
+| `canceled` | Dibatalkan oleh user atau admin | User / Admin |
+| `rejected` | Ditolak admin | Admin |
+
+### Status Rental
+
+| Status | Keterangan |
+|---|---|
+| `paid` | Pembayaran diterima, kendaraan belum diserahkan |
+| `ongoing` | Kendaraan sedang digunakan |
+| `returned` | Kendaraan sudah dikembalikan |
+| `completed` | Rental selesai dikonfirmasi |
+| `awaiting_confirmation` | Menunggu konfirmasi |
+| `payment_failed` | Pembayaran gagal |
+
+### Status Perpanjangan
+
+| Status | Keterangan |
+|---|---|
+| `pending` | Menunggu persetujuan admin |
+| `approved` | Disetujui, menunggu pembayaran |
+| `paid` | Pembayaran selesai, end_date rental diperbarui |
+| `rejected` | Ditolak admin |
+| `canceled` | Dibatalkan atau pembayaran expired |
+
+---
+
+## Skema Database
+
+| Tabel | Keterangan |
+|---|---|
+| `users` | Admin & user, role via Spatie Permission |
+| `vehicles` | Data kendaraan (car/motorcycle), stok, status |
+| `vehicle_features` | Fitur kendaraan (pivot) |
+| `vehicle_prices` | Harga per paket per kendaraan |
+| `rental_packages` | Paket durasi sewa (dalam jam) |
+| `services` | Layanan tambahan (khusus mobil) |
+| `reservations` | Reservasi sebelum jadi rental, support SoftDeletes |
+| `reservation_services` | Layanan yang dipilih saat reservasi (pivot) |
+| `rentals` | Rental aktif, dibuat otomatis dari webhook Midtrans |
+| `rental_services` | Layanan yang di-copy dari reservasi ke rental (pivot) |
+| `rental_extensions` | Pengajuan perpanjangan rental beserta data pembayaran |
+| `rental_location_logs` | Log GPS kendaraan (lat, lng, address, speed km/h) |
+| `notifications` | Notifikasi in-app per user |
+| `activity_log` | Log aktivitas sistem via Spatie Activitylog |
+
+---
+
+## Instalasi Lokal
+
+### Requirements
+
+- PHP >= 8.3 dengan ekstensi: `pdo_pgsql`, `mbstring`, `xml`, `gd`, `bcmath`, `curl`, `fileinfo`, `openssl`
+- Composer
+- Node.js >= 20.x & NPM
+- PostgreSQL >= 14
+- Git
+- [Laragon](https://laragon.org/) (Windows) atau Laravel Herd / XAMPP
+
+### Langkah-langkah
 
 ```bash
+# 1. Clone repo
 git clone https://github.com/jokopurnomo07/cosmo-rent.git
 cd cosmo-rent
-```
 
-### 2. Install PHP dependencies
-
-```bash
+# 2. Install dependensi PHP
 composer install
-```
 
-### 3. Install Node dependencies
-
-```bash
+# 3. Install dependensi Node
 npm install
-```
 
-### 4. Copy environment file
-
-```bash
+# 4. Copy file environment
 cp .env.example .env
-```
 
-### 5. Generate application key
-
-```bash
+# 5. Generate app key
 php artisan key:generate
 ```
 
-### 6. Configure your `.env` file
+---
 
-Open `.env` and update the following values:
+## Konfigurasi Environment
+
+Buka `.env` dan sesuaikan nilai berikut:
 
 ```dotenv
 APP_NAME=cosmo-rent
@@ -115,48 +200,53 @@ DB_DATABASE=cosmo-rent
 DB_USERNAME=postgres
 DB_PASSWORD=your_password
 
+# Midtrans
 MIDTRANS_SERVER_KEY=SB-Mid-server-your-sandbox-key
+MIDTRANS_CLIENT_KEY=SB-Mid-client-your-sandbox-key
 MIDTRANS_IS_PRODUCTION=false
 
+# Pusher (realtime tracking & notifikasi)
+PUSHER_APP_ID=your-app-id
+PUSHER_APP_KEY=your-app-key
+PUSHER_APP_SECRET=your-app-secret
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=mt1
+
+# Mail
 MAIL_MAILER=smtp
 MAIL_HOST=127.0.0.1
 MAIL_PORT=1025
 MAIL_FROM_ADDRESS=hello@cosmorent.com
 MAIL_FROM_NAME="cosmo-rent"
+
+# Tracking device authentication
+TRACKING_SECRET=your-secret-token
 ```
 
-> Get your Midtrans sandbox key from [sandbox.midtrans.com](https://sandbox.midtrans.com) → Settings → Access Keys
+> Midtrans sandbox key: [sandbox.midtrans.com](https://sandbox.midtrans.com) → Settings → Access Keys
 
 ---
 
-## Database Setup
-
-### 1. Create the database
+## Setup Database
 
 ```bash
-# Using psql
-psql -U postgres
-CREATE DATABASE "cosmo-rent";
-\q
-```
+# Buat database
+psql -U postgres -c 'CREATE DATABASE "cosmo-rent";'
 
-### 2. Run migrations
-
-```bash
+# Jalankan migrasi
 php artisan migrate
-```
 
-### 3. Run seeders (optional — creates default admin & sample data)
-
-```bash
+# (Opsional) Jalankan seeder — membuat akun, kendaraan, paket, & sample data
 php artisan db:seed
 ```
 
+Seeder tersedia: `UserSeeder`, `RoleSeeder`, `VehicleSeeder`, `RentalPackageSeeder`, `VehiclePriceSeeder`, `ServiceSeeder`, `FeatureSeeder`, `RentalSeeder`, `ReservationSeeder`.
+
 ---
 
-## Running the Application
-
-### Start all services at once (recommended)
+## Menjalankan Aplikasi
 
 ```bash
 # Terminal 1 — Laravel server
@@ -164,168 +254,207 @@ php artisan serve
 
 # Terminal 2 — Vite asset compiler
 npm run dev
+
+# Terminal 3 — Queue worker (untuk email & event)
+php artisan queue:work
+
+# Terminal 4 — Scheduler
+php artisan schedule:work
 ```
 
-Then open [http://localhost:8000](http://localhost:8000) in your browser.
+Buka [http://localhost:8000](http://localhost:8000) di browser.
 
-### If using Laragon with custom domain
+> Jika menggunakan Laragon: akses di `http://cosmorent.test`, cukup jalankan `npm run dev`.
 
-Laragon auto-serves at `http://cosmorent.test`. Just run:
+---
+
+## Scheduled Tasks
+
+| Command | Jadwal | Fungsi |
+|---|---|---|
+| `notify:pickup` | Setiap hari | Kirim email ke user yang kendaraannya siap diambil hari itu |
+| `extensions:cancel-expired` | Setiap jam | Batalkan perpanjangan yang melewati batas waktu pembayaran (`payment_due_at`) |
+
+Untuk production, pastikan cron berjalan:
 
 ```bash
-npm run dev
+* * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ---
 
-## Default Accounts
+## Akun Default
 
-After running seeders:
+Setelah menjalankan seeder:
 
 | Role | Email | Password |
 |---|---|---|
 | Admin | admin@cosmorent.com | password |
 | User | user@cosmorent.com | password |
 
-> If no seeder is available, register a new account and manually update the `role` column in the `users` table to `admin`.
+> Jika seeder belum tersedia: daftar akun baru, lalu ubah kolom `role` di tabel `users` menjadi `admin` secara manual lewat database.
 
 ---
 
-## Payment Testing (Midtrans Sandbox)
+## Testing Pembayaran Midtrans
 
-This app uses **Midtrans Sandbox** — no real money is involved.
+Aplikasi ini menggunakan **Midtrans Sandbox** — tidak ada uang sungguhan yang diproses.
 
-### Test Credit Card
+### Kartu Kredit Test
 
 | Field | Value |
 |---|---|
-| Card Number | `4811 1111 1111 1114` (success) |
-| Card Number | `4911 1111 1111 1113` (failure) |
+| Nomor Kartu (sukses) | `4811 1111 1111 1114` |
+| Nomor Kartu (gagal) | `4911 1111 1111 1113` |
 | CVV | `123` |
-| Expiry | Any future date |
+| Expiry | Tanggal apa saja di masa depan |
 | OTP / 3DS | `112233` |
 
-### Webhook (local development)
+### Webhook (Development Lokal)
 
-Midtrans cannot hit `localhost` directly. Use **ngrok** to expose your local server:
+Midtrans tidak bisa hit `localhost` secara langsung. Gunakan **ngrok**:
 
 ```bash
-# Install ngrok from https://ngrok.com/download
-# Then expose your local server
 ngrok http 8000
 
-# Or if using Laragon custom domain
+# Jika menggunakan Laragon custom domain
 ngrok http cosmorent.test --host-header=cosmorent.test
 ```
 
-Then set the notification URL in [Midtrans sandbox dashboard](https://sandbox.midtrans.com):
+Set URL di [sandbox.midtrans.com](https://sandbox.midtrans.com) → Settings → Configuration:
 
 ```
-Settings → Configuration → Payment Notification URL
-https://your-ngrok-url.ngrok.io/midtrans/notification
+Payment Notification URL : https://your-ngrok-url.ngrok.io/midtrans/notification
+Finish Redirect URL      : https://your-ngrok-url.ngrok.io/payments/finish
 ```
+
+> Route `/midtrans/notification` sudah dikecualikan dari CSRF verification.
 
 ---
 
-## Deployment to Railway
+## Deployment ke Railway
 
-### Prerequisites
-- [Railway account](https://railway.app)
-- GitHub repository connected to Railway
+### Prasyarat
+- Akun [Railway](https://railway.app)
+- Repo GitHub terhubung ke Railway
 
-### Step 1 — Add PostgreSQL service
+### Langkah-langkah
 
-Railway dashboard → **New** → **Database** → **PostgreSQL**
+**1. Tambahkan PostgreSQL service**
 
-### Step 2 — Deploy Laravel service
+Railway dashboard → New → Database → PostgreSQL
 
-Railway dashboard → **New** → **GitHub Repo** → select your repo
+**2. Deploy Laravel service**
 
-### Step 3 — Set Environment Variables
+Railway dashboard → New → GitHub Repo → pilih repo ini
 
-Go to your Laravel service → **Variables** → add:
+**3. Set Environment Variables**
+
+Masuk ke Laravel service → Variables → tambahkan semua nilai dari `.env`, disesuaikan untuk production:
 
 ```
-APP_NAME=cosmo-rent
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=           ← php artisan key:generate --show
-APP_URL=           ← your Railway domain
+APP_URL=           ← domain Railway kamu
 
 DB_CONNECTION=pgsql
-DB_HOST=           ← from Railway PostgreSQL → Connect → Laravel
-DB_PORT=           ← from Railway PostgreSQL → Connect → Laravel
-DB_DATABASE=       ← from Railway PostgreSQL → Connect → Laravel
-DB_USERNAME=       ← from Railway PostgreSQL → Connect → Laravel
-DB_PASSWORD=       ← from Railway PostgreSQL → Connect → Laravel
+DB_HOST=           ← Railway PostgreSQL → Connect → Laravel
+DB_PORT=           ← Railway PostgreSQL → Connect → Laravel
+DB_DATABASE=       ← Railway PostgreSQL → Connect → Laravel
+DB_USERNAME=       ← Railway PostgreSQL → Connect → Laravel
+DB_PASSWORD=       ← Railway PostgreSQL → Connect → Laravel
 
-MIDTRANS_SERVER_KEY=SB-Mid-server-your-sandbox-key
+MIDTRANS_SERVER_KEY=SB-Mid-server-your-key
+MIDTRANS_CLIENT_KEY=SB-Mid-client-your-key
 MIDTRANS_IS_PRODUCTION=false
 
-MAIL_MAILER=log
-MAIL_FROM_ADDRESS=hello@cosmorent.com
-MAIL_FROM_NAME=cosmo-rent
+MAIL_MAILER=log    ← ganti ke SMTP provider jika butuh email production
+TRACKING_SECRET=your-secret-token
 ```
 
-> To get DB credentials: Railway → PostgreSQL service → **Connect** tab → **Laravel** section
-
-### Step 4 — Set Midtrans notification URL
-
-[sandbox.midtrans.com](https://sandbox.midtrans.com) → Settings → Configuration:
+**4. Set Midtrans notification URL**
 
 ```
-Payment Notification URL: https://your-app.up.railway.app/midtrans/notification
-Finish Redirect URL: https://your-app.up.railway.app/payments/finish
+Payment Notification URL : https://your-app.up.railway.app/midtrans/notification
+Finish Redirect URL      : https://your-app.up.railway.app/payments/finish
 ```
 
-### Step 5 — Deploy
+**5. Deploy**
 
-Railway will auto-deploy on every push to your main branch. Migrations run automatically on startup.
+Railway auto-deploy setiap push ke branch `main`. Startup command sudah dikonfigurasi via `nixpacks.toml`:
+
+```
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+php artisan migrate --force
+php artisan serve --host=0.0.0.0 --port=$PORT
+```
 
 ---
 
-## Project Structure
+## Struktur Proyek
 
 ```
 cosmo-rent/
 ├── app/
+│   ├── Console/
+│   │   └── Commands/
+│   │       ├── CancelExpiredExtensions.php   # Batalkan perpanjangan yang melewati payment_due_at
+│   │       └── NotifyUsersForPickup.php       # Email harian notifikasi siap pickup
+│   ├── Events/
+│   │   ├── ReservationCreated.php
+│   │   ├── ExtensionRequested.php
+│   │   ├── ExtensionApproved.php
+│   │   └── ExtensionPaid.php
+│   ├── Exports/
+│   │   └── RentalsExport.php                  # Export Excel laporan rental
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Admin/          # Admin controllers
-│   │   │   ├── Frontend/       # Public-facing controllers
-│   │   │   └── User/           # Authenticated user controllers
+│   │   │   ├── Admin/                         # Dashboard, Vehicle, Reservation, Rental, Extension, Tracking
+│   │   │   ├── Frontend/                      # Home, Vehicle, Reservation, Payment, RentalExtension
+│   │   │   └── User/                          # Reservation, Rental, BookingHistory
 │   │   └── Middleware/
-│   ├── Mail/                   # Mailable classes
-│   ├── Models/                 # Eloquent models
-│   └── Providers/
+│   │       └── RoleMiddleware.php
+│   ├── Mail/                                  # ExtensionApproved, ReservationConfirmation, RejectionNotification, dll
+│   └── Models/
+│       ├── Rental.php
+│       ├── RentalExtension.php
+│       ├── RentalLocationLog.php
+│       ├── RentalPackage.php
+│       ├── Reservation.php
+│       ├── Service.php
+│       ├── User.php
+│       ├── Vehicle.php
+│       └── Notification.php
 ├── database/
 │   ├── migrations/
 │   └── seeders/
 ├── resources/
 │   ├── views/
-│   │   ├── admin/              # Admin panel views
-│   │   ├── frontend/           # Public views
-│   │   └── user/               # User dashboard views
+│   │   ├── admin/      # Panel admin
+│   │   ├── frontend/   # Halaman publik
+│   │   └── user/       # Dashboard user
 │   └── js/
 ├── routes/
 │   └── web.php
-├── nixpacks.toml               # Railway Nixpacks build config
-├── railway.toml                # Railway deployment config
+├── nixpacks.toml        # Build & start config Railway
 └── .env.example
 ```
 
 ---
 
-## Security Notes
+## Catatan Keamanan
 
-- Never commit `.env` to git — it is listed in `.gitignore`
-- Always rotate `APP_KEY` before going to production
-- Set `APP_DEBUG=false` in production
-- Use a strong `DB_PASSWORD` in production
-- Switch `MIDTRANS_IS_PRODUCTION=true` and use production server key only when the app is ready for real transactions
+- Jangan commit file `.env` — sudah ada di `.gitignore`
+- Selalu rotate `APP_KEY` sebelum production
+- Set `APP_DEBUG=false` di production
+- Gunakan password DB yang kuat di production
+- Ganti `MIDTRANS_IS_PRODUCTION=true` dan gunakan production server key hanya saat siap transaksi nyata
+- Endpoint tracking publik (`POST /tracking/{rental_id}/add-location`) diproteksi header `X-TRACKING-TOKEN` yang dicocokkan dengan `TRACKING_SECRET` di env
+- Route `/midtrans/notification` dikecualikan dari CSRF — pastikan signature verification Midtrans aktif di production
 
 ---
 
-## License
+## Lisensi
 
-This project is developed as a final project (Skripsi) and is intended for academic purposes.
+Proyek ini dikembangkan sebagai Tugas Akhir (Skripsi) untuk tujuan akademis.
